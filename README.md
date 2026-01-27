@@ -28,19 +28,16 @@ Display the spinner next to the cursor:
 <img src="example/example.gif" alt="Preview Image" width="580">
 
 ## APIS
+
 ```lua
--- Create spinner
 local spinner = require(spinner)
 
 -- create a spinner
 local sp = spinner.new()
-
 -- statusline spinner
 sp = spinner.statusline_spinner()
-
 --- tabline spinner
 sp = spinner.tabline_spinner()
-
 --- cursor spinner
 sp = spinner.cursor_spinner()
 
@@ -50,6 +47,7 @@ sp:start()
 --- sopt spinner
 sp:stop()
 ```
+
 see more example: [example](https://github.com/xieyonn/spinner.nvim/blob/main/example/example.lua)
 
 ## Options
