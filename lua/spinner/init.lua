@@ -186,7 +186,9 @@ local function cursor_spinner(o)
         })
       end
 
-      vim.api.nvim_buf_set_lines(buf, 0, -1, false, { tostring(sp) })
+      if vim.api.nvim_buf_is_valid(buf) then
+        vim.api.nvim_buf_set_lines(buf, 0, -1, false, { tostring(sp) })
+      end
       return
     end
 
