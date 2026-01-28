@@ -18,9 +18,10 @@ local default_opts = {
   },
   interval = 80, -- refresh millisecond.
   ttl = 0, -- the spinner will automatically stop after that {ttl} millisecond.
+  initial_delay = 200, -- delay display spinner after {initial_delay} millisecond.
 
-  -- CursorSpinner Opts
-  hl_group = "Spinner", -- link to NormalFloat by default.
+  -- CursorSpinner Options
+  hl_group = "Spinner", -- highlight group for spinner text, link to NormalFloat by default.
   winblend = 60, -- CursorSpinner window option.
   width = 3, -- CursorSpinner window option.
   zindex = 50, -- CursorSpinner window option.

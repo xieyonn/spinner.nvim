@@ -2,11 +2,13 @@ local uv = vim.uv
 
 ---@class spinner.Event
 ---@field text string
+---@field enabled boolean
 
 ---@class spinner.Opts
 ---@field texts? string[]
 ---@field interval? integer millisecond
 ---@field ttl? integer millisecond
+---@field initial_delay? integer millisecond
 ---@field on_change? fun(event: spinner.Event)
 
 ---@class spinner.Spinner
@@ -37,30 +39,51 @@ function Spinner:start()
   end
 
   self.enabled = true
-  if self.opts.ttl > 0 then
-    self.start_time = uv.now()
-  end
-  self.timer = uv.new_timer()
-  assert(self.timer, "Failed to create spinner timer")
 
-  self.timer:start(
-    0,
-    self.opts.interval,
-    vim.schedule_wrap(function()
-      if self.opts.on_change then
-        self.opts.on_change({
-          text = tostring(self),
-        })
-      end
+  local start = function()
+    if not self.enabled then
+      return
+    end
 
-      self.idx = (self.idx % #self.opts.texts) + 1
-      if self.opts.ttl > 0 then
-        if uv.now() - self.start_time >= self.opts.ttl then
-          self:stop()
+    if self.opts.ttl > 0 then
+      self.start_time = uv.now()
+    end
+    self.timer = uv.new_timer()
+    assert(self.timer, "Failed to create spinner timer")
+
+    local length = #self.opts.texts
+
+    self.timer:start(
+      0,
+      self.opts.interval,
+      vim.schedule_wrap(function()
+        --- spinner may have been stopped
+        if not self.enabled then
+          return
         end
-      end
-    end)
-  )
+
+        if self.opts.on_change then
+          self.opts.on_change({
+            text = tostring(self),
+            enabled = self.enabled,
+          })
+        end
+
+        self.idx = (self.idx % length) + 1
+        if self.opts.ttl > 0 then
+          if uv.now() - self.start_time >= self.opts.ttl then
+            self:stop()
+          end
+        end
+      end)
+    )
+  end
+
+  if self.opts.initial_delay > 0 then
+    vim.defer_fn(start, self.opts.initial_delay)
+  else
+    start()
+  end
 end
 
 ---Stop spinner.
@@ -75,6 +98,7 @@ function Spinner:stop()
   if self.opts.on_change then
     self.opts.on_change({
       text = tostring(self),
+      enabled = self.enabled,
     })
   end
 end
