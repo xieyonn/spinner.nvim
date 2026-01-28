@@ -27,28 +27,55 @@ Display the spinner next to the cursor:
 
 <img src="example/example.gif" alt="Preview Image" width="580">
 
-## APIS
+## Usage
+
+### statusline/tabline spinner
 
 ```lua
-local spinner = require(spinner)
+--- 1. create a spinner
+local sp = require("spinner").statusline_spinner()
+-- local sp = require("spinner").tabline_spinner()
 
--- create a spinner
-local sp = spinner.new()
--- statusline spinner
-sp = spinner.statusline_spinner()
---- tabline spinner
-sp = spinner.tabline_spinner()
---- cursor spinner
-sp = spinner.cursor_spinner()
+--- 2. define a global function
+function lsp_sp_component()
+  return tostring(sp)
+end
 
+--- 3. set statusline/tabline
+vim.o.statusline = vim.o.statusline .. "%!v:lua.lsp_sp_component()"
+-- vim.o.tabline = vim.o.tabline .. "%!v:lua.lsp_sp_component()"
 
---- start spinner
+--- 4. start/stop spinner according to your needs.
 sp:start()
---- sopt spinner
 sp:stop()
 ```
 
-see more example: [example](https://github.com/xieyonn/spinner.nvim/blob/main/example/example.lua)
+### cursor spinner
+
+```lua
+local sp = require("spinner").cursor_spinner()
+--- start spinner
+sp:start()
+--- stop spinner
+sp:stop()
+```
+
+### subscribe to LspProgress
+
+```lua
+local sp = require("spinner").cursor_spinner()
+vim.api.nvim_create_autocmd("LspProgress", {
+  callback = function(event)
+    local kind = event.data.params.value.kind
+    if kind == "begin" then
+      sp:start()
+    end
+    if kind == "end" then
+      sp:stop()
+    end
+  end,
+})
+```
 
 ## Options
 
@@ -60,7 +87,7 @@ local default_opts = {
   interval = 80, -- refresh millisecond.
   ttl = 0, -- the spinner will automatically stop after that {ttl} millisecond.
 
-  -- CursorSpinner
+  -- CursorSpinner Options
   hl_group = "Spinner", -- link to `NormalFloat` by default.
   winblend = 60, -- CursorSpinner window option.
   width = 3, -- CursorSpinner window option.
