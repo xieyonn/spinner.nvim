@@ -1,5 +1,7 @@
 # spinner.nvim
 
+[![Unit Tests](https://github.com/xieyonn/spinner.nvim/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/xieyonn/spinner.nvim/actions/workflows/test.yaml)
+
 Lightweight spinner component for Neovim.
 
 ## Quick Start

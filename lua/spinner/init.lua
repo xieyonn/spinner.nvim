@@ -35,6 +35,7 @@ end
 
 ---Start spinner.
 function Spinner:start()
+  self.active = self.active + 1
   if self.enabled then
     return
   end
@@ -42,19 +43,18 @@ function Spinner:start()
   self.enabled = true
 
   local start = function()
+    --- spinner may have been stopped
     if not self.enabled then
       return
     end
 
-    -- spinner really start here
-    self.active = self.active + 1
-
     if self.opts.ttl > 0 then
       self.start_time = uv.now()
     end
-    self.timer = uv.new_timer()
+    if not self.timer then
+      self.timer = uv.new_timer()
+    end
     assert(self.timer, "Failed to create spinner timer")
-
     local length = #self.opts.texts
 
     self.timer:start(
@@ -66,18 +66,19 @@ function Spinner:start()
           return
         end
 
+        self.idx = (self.idx % length) + 1
+        if
+          self.opts.ttl > 0 and uv.now() - self.start_time >= self.opts.ttl
+        then
+          self:stop()
+          return
+        end
+
         if self.opts.on_change then
           self.opts.on_change({
             text = tostring(self),
-            enabled = self.enabled,
+            enabled = true,
           })
-        end
-
-        self.idx = (self.idx % length) + 1
-        if self.opts.ttl > 0 then
-          if uv.now() - self.start_time >= self.opts.ttl then
-            self:stop()
-          end
         end
       end)
     )
@@ -92,21 +93,17 @@ end
 
 ---Stop spinner.
 function Spinner:stop()
+  self.active = self.active - 1
   if not self.enabled then
     return
   end
-
-  self.enabled = false
-
-  self.active = self.active - 1
   if self.active > 0 then
     return
   end
 
-  -- spinner really stop here.
-  if self.active < 0 then
-    self.active = 0
-  end
+  self.enabled = false
+  self.active = 0
+  self.idx = 0
 
   if self.timer then
     self.timer:stop()
@@ -117,14 +114,20 @@ function Spinner:stop()
   if self.opts.on_change then
     self.opts.on_change({
       text = tostring(self),
-      enabled = self.enabled,
+      enabled = false,
     })
   end
-  self.idx = 0
 end
 
 function Spinner:__tostring()
   return self.enabled and self.opts.texts[self.idx] or ""
+end
+
+local function create_buf()
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.bo[buf].buftype = "nofile"
+  vim.bo[buf].bufhidden = "wipe"
+  return buf
 end
 
 ---@class spinner.CursorOpts: spinner.Opts
@@ -144,17 +147,19 @@ local function cursor_spinner(o)
   opts = vim.tbl_extend("force", opts, o or {})
   local sp = new(opts)
 
-  local buf = vim.api.nvim_create_buf(false, true)
   local win = nil
-  vim.bo[buf].buftype = "nofile"
-  vim.bo[buf].bufhidden = "wipe"
+  local buf = create_buf()
 
   if sp.opts.on_change ~= nil then
     return sp
   end
 
   sp.opts.on_change = function(event)
-    if event.text ~= "" then
+    if event.enabled then
+      if not vim.api.nvim_buf_is_valid(buf) then
+        buf = create_buf()
+      end
+
       local screen_col = vim.fn.win_screenpos(0)[2] + vim.fn.wincol() - 1
       local row = opts.row
       local col = opts.col
@@ -186,9 +191,7 @@ local function cursor_spinner(o)
         })
       end
 
-      if vim.api.nvim_buf_is_valid(buf) then
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, { tostring(sp) })
-      end
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, { tostring(sp) })
       return
     end
 
