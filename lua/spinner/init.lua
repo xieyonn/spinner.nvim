@@ -119,6 +119,7 @@ function Spinner:stop()
       enabled = self.enabled,
     })
   end
+  self.idx = 0
 end
 
 function Spinner:__tostring()
