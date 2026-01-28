@@ -29,74 +29,72 @@ Display the spinner next to the cursor:
 
 ## Usage
 
-Use `require("spinner").new()` to create a spinner object, which you can
-treat as a read-only string (`tostring(sp)`) that updates automatically.
+1. Create a spinner object
 
-You can place it wherever you want to display the spinner.
+```lua
+local sp = require("spinner").new()
+```
 
-To make the spinner actually animate, you need to provide an `on_change()` callback
-(called when spinner move to next frame) so it can refresh the UI.
+> you can treat `sp` as a read-only string that updates automatically.
 
-for example, create a spinner in statusline.
+2. Place `sp` to wherever you want.
+   eg: statusline
+
+```lua
+-- use a global function here.
+function sp_component()
+  return tostring(sp)
+end
+
+vim.o.statusline = vim.o.statusline .. "%!v:lua.sp_component()"
+```
+
+3. In order to make the spinner actually animate, you need to provide an
+   `on_change` callback (called when spinner move to next frame) so it can
+   refresh the UI.
 
 ```lua
 local sp = require("spinner").new({
     on_change = function()
-        -- refresh statusline so the spinner animate.
+        -- refresh statusline
         vim.cmd("redrawstatus")
     end
 })
-```
 
-This is essentially just a function that has already been encapsulated as
-`require("spinner").statusline_spinner()`
-
-### statusline/tabline spinner
-
-```lua
---- 1. create a spinner
+-- This is essentially just a function that has already been encapsulated as `statusline_spinner`.
 local sp = require("spinner").statusline_spinner()
--- local sp = require("spinner").tabline_spinner()
 
---- 2. define a global function
-function sp_component()
-  return tostring(sp)
-  -- you can add extra text here
-  -- return tostring(sp) .. "something"
-end
+--- create a tabline_spinner, which call vim.cmd("redrawtabline") in on_change.
+local sp = require("spinner").tabline_spinner()
 
---- 3. set statusline/tabline
-vim.o.statusline = vim.o.statusline .. "%!v:lua.sp_component()"
--- vim.o.tabline = vim.o.tabline .. "%!v:lua.sp_component()"
+--- create a cursor spinner, which create a floating window to display spinner.
+local sp = require("spinner").cursor_spinner()
+```
 
---- 4. start/stop spinner according to your needs.
+4. start/stop spinner according to your needs.
+
+```lua
 sp:start()
 sp:stop()
 ```
 
-### cursor spinner
+A example of subscribe `LspProgress` event:
 
 ```lua
-local sp = require("spinner").cursor_spinner()
---- start spinner
-sp:start()
---- stop spinner
-sp:stop()
-```
-
-### subscribe events
-
-LspProgress:
-
-```lua
-local sp = require("spinner").cursor_spinner()
+local lsp_work_by_client_id = {}
 vim.api.nvim_create_autocmd("LspProgress", {
   callback = function(event)
     local kind = event.data.params.value.kind
-    if kind == "begin" then
+    local client_id = event.data.client_id
+
+    local work = lsp_work_by_client_id[client_id] or 0
+    local work_change = kind == "begin" and 1 or (kind == "end" and -1 or 0)
+    lsp_work_by_client_id[client_id] = math.max(work + work_change, 0)
+
+    if work == 0 and work_change > 0 then
       sp:start()
     end
-    if kind == "end" then
+    if work == 1 and work_change < 0 then
       sp:stop()
     end
   end,
@@ -105,20 +103,33 @@ vim.api.nvim_create_autocmd("LspProgress", {
 
 ## Options
 
-Default:
+Default Options:
 
 ```lua
 local default_opts = {
   texts = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
   interval = 80, -- refresh millisecond.
   ttl = 0, -- the spinner will automatically stop after that {ttl} millisecond.
+  initial_delay = 200, -- delay display spinner after {initial_delay} millisecond.
+  on_change = nil, -- spinner will call {on_change} when spinner animate. use
+  --                    this callback to update UI, eg: redrawstatus
 
   -- CursorSpinner Options
-  hl_group = "Spinner", -- link to `NormalFloat` by default.
+  hl_group = "Spinner", -- highlight group for spinner text, link to NormalFloat by default.
   winblend = 60, -- CursorSpinner window option.
   width = 3, -- CursorSpinner window option.
   zindex = 50, -- CursorSpinner window option.
   row = -1, -- CursorSpinner window position, relative to cursor.
   col = 1, -- CursorSpinner window position, relative to cursor.
 }
+```
+
+`on_change` callback
+
+```lua
+---@class spinner.Event
+---@field text string current spinner frame
+---@field enabled boolean true -> start, false -> stop
+
+---@field on_change? fun(event: spinner.Event)
 ```
