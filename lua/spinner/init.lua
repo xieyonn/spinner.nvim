@@ -95,18 +95,19 @@ function Spinner:stop()
   if not self.enabled then
     return
   end
+
   self.enabled = false
 
   self.active = self.active - 1
-  if self.active < 0 then
-    self.active = 0
-  end
-
   if self.active > 0 then
     return
   end
 
   -- spinner really stop here.
+  if self.active < 0 then
+    self.active = 0
+  end
+
   if self.timer then
     self.timer:stop()
     self.timer:close()
