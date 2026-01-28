@@ -89,14 +89,23 @@ sp:stop()
 LspProgress:
 
 ```lua
-local sp = require("spinner").cursor_spinner()
+local sp = require("spinner").statusline_spinner()
+
+local lsp_work_by_client_id = {}
 vim.api.nvim_create_autocmd("LspProgress", {
+  group = mce.augroup("spinner"),
   callback = function(event)
     local kind = event.data.params.value.kind
-    if kind == "begin" then
+    local client_id = event.data.client_id
+
+    local work = lsp_work_by_client_id[client_id] or 0
+    local work_change = kind == "begin" and 1 or (kind == "end" and -1 or 0)
+    lsp_work_by_client_id[client_id] = math.max(work + work_change, 0)
+
+    if work == 0 and work_change > 0 then
       sp:start()
     end
-    if kind == "end" then
+    if work == 1 and work_change < 0 then
       sp:stop()
     end
   end,
@@ -105,20 +114,33 @@ vim.api.nvim_create_autocmd("LspProgress", {
 
 ## Options
 
-Default:
+Default Options:
 
 ```lua
 local default_opts = {
   texts = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
   interval = 80, -- refresh millisecond.
   ttl = 0, -- the spinner will automatically stop after that {ttl} millisecond.
+  initial_delay = 200, -- delay display spinner after {initial_delay} millisecond.
+  on_change = nil, -- spinner will call {on_change} when spinner animate. use
+  --                    this callback to update UI, eg: redrawstatus
 
   -- CursorSpinner Options
-  hl_group = "Spinner", -- link to `NormalFloat` by default.
+  hl_group = "Spinner", -- highlight group for spinner text, link to NormalFloat by default.
   winblend = 60, -- CursorSpinner window option.
   width = 3, -- CursorSpinner window option.
   zindex = 50, -- CursorSpinner window option.
   row = -1, -- CursorSpinner window position, relative to cursor.
   col = 1, -- CursorSpinner window position, relative to cursor.
 }
+```
+
+`on_change` callback
+
+```lua
+---@class spinner.Event
+---@field text string current spinner frame
+---@field enabled boolean true -> start, false -> stop
+
+---@field on_change? fun(event: spinner.Event)
 ```
