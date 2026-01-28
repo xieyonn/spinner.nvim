@@ -29,6 +29,28 @@ Display the spinner next to the cursor:
 
 ## Usage
 
+Use `require("spinner").new()` to create a spinner object, which you can
+treat as a read-only string (`tostring(sp)`) that updates automatically.
+
+You can place it wherever you want to display the spinner.
+
+To make the spinner actually animate, you need to provide an `on_change()` callback
+(called when spinner move to next frame) so it can refresh the UI.
+
+for example, create a spinner in statusline.
+
+```lua
+local sp = require("spinner").new({
+    on_change = function()
+        -- refresh statusline so the spinner animate.
+        vim.cmd("redrawstatus")
+    end
+})
+```
+
+This is essentially just a function that has already been encapsulated as
+`require("spinner").statusline_spinner()`
+
 ### statusline/tabline spinner
 
 ```lua
