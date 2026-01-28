@@ -29,6 +29,7 @@ local function new(o)
     timer = nil,
     enabled = false,
     start_time = 0,
+    active = 0,
   }, Spinner)
 end
 
@@ -44,6 +45,9 @@ function Spinner:start()
     if not self.enabled then
       return
     end
+
+    -- spinner really start here
+    self.active = self.active + 1
 
     if self.opts.ttl > 0 then
       self.start_time = uv.now()
@@ -88,13 +92,27 @@ end
 
 ---Stop spinner.
 function Spinner:stop()
+  if not self.enabled then
+    return
+  end
+  self.enabled = false
+
+  self.active = self.active - 1
+  if self.active < 0 then
+    self.active = 0
+  end
+
+  if self.active > 0 then
+    return
+  end
+
+  -- spinner really stop here.
   if self.timer then
     self.timer:stop()
     self.timer:close()
     self.timer = nil
   end
 
-  self.enabled = false
   if self.opts.on_change then
     self.opts.on_change({
       text = tostring(self),
