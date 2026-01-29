@@ -83,25 +83,21 @@ sp:stop()
 A example of subscribe `LspProgress` event:
 
 ```lua
-local lsp_work_by_client_id = {}
 vim.api.nvim_create_autocmd("LspProgress", {
   callback = function(event)
     local kind = event.data.params.value.kind
-    local client_id = event.data.client_id
-
-    local work = lsp_work_by_client_id[client_id] or 0
-    local work_change = kind == "begin" and 1 or (kind == "end" and -1 or 0)
-    lsp_work_by_client_id[client_id] = math.max(work + work_change, 0)
-
-    if work == 0 and work_change > 0 then
-      sp:start()
+    if kind == "begin" then
+        sp:start()
     end
-    if work == 1 and work_change < 0 then
-      sp:stop()
+    if kind == "end" then
+        sp:stop()
     end
   end,
 })
 ```
+
+> LspProgress may emit multiple start/stop events in a short time, spinner can
+> handle this by counting start/stop pairs.
 
 ## Options
 
