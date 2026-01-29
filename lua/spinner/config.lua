@@ -23,7 +23,7 @@ local default_opts = {
   -- CursorSpinner Options
   hl_group = "Spinner", -- highlight group for spinner text, link to NormalFloat by default.
   winblend = 60, -- CursorSpinner window option.
-  width = 3, -- CursorSpinner window option.
+  width = 1, -- CursorSpinner window option.
   zindex = 50, -- CursorSpinner window option.
   row = -1, -- CursorSpinner window position, relative to cursor.
   col = 1, -- CursorSpinner window position, relative to cursor.
