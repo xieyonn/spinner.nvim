@@ -2,7 +2,7 @@
 
 Extensible spinner framework for Neovim plugins and UI.
 
-<img src="https://github.com/user-attachments/assets/50b39aae-a7b0-4b59-974e-03ad741738b7" width="700" />
+<img src="https://github.com/user-attachments/assets/0f73538e-55c5-4054-bd18-eec4b7c68bbe" width="560" />
 
 ## Features
 
