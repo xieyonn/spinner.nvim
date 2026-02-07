@@ -1,6 +1,5 @@
 [![Latest Release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/releases/latest)
-[![codecov](https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main)](
-https://codecov.io/gh/xieyonn/spinner.nvim
+[![codecov](https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main)](https://codecov.io/gh/xieyonn/spinner.nvim)
 
 Extensible spinner framework for Neovim plugins and UI.
 

@@ -253,17 +253,15 @@ function M:render()
     text = self.opts.pattern.frames[self.index] or ""
   end
 
-  -- Apply fmt function to the raw text first
+  if text ~= "" and self.opts.kind == "cmdline" then
+    text = "{{SPINNER_HIGHLIGHT}}" .. text .. "{{END_HIGHLIGHT}}"
+  end
+
   if self.opts.fmt then
     text = self.opts.fmt({
       text = text,
       status = self.status,
     })
-  end
-
-  -- Then add highlight markers if needed (only for cmdline and if text is not empty)
-  if text ~= "" and self.opts.kind == "cmdline" then
-    text = "{{SPINNER_HIGHLIGHT}}" .. text .. "{{END_HIGHLIGHT}}"
   end
 
   return text or ""

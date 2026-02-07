@@ -168,6 +168,7 @@ describe("state", function()
       eq(nil, next_time)
       eq(STATUS.RUNNING, state.status)
       eq(0, state.last_spin)
+      eq(100, state.opts.initial_delay_ms)
     end
   )
 
@@ -745,4 +746,160 @@ describe("state", function()
       eq("[{{SPINNER_HIGHLIGHT}}a{{END_HIGHLIGHT}}]", state:render())
     end
   )
+
+  it("should validate cursor-specific options", function()
+    state = new("test_cursor", {
+      kind = "cursor",
+      hl_group = "TestHighlight",
+      winblend = 50,
+      zindex = 10,
+      row = 1,
+      col = 2,
+      border = "single",
+    })
+
+    eq("TestHighlight", state.opts.hl_group)
+  end)
+
+  it("should validate extmark-specific options", function()
+    state = new("test_extmark", {
+      kind = "extmark",
+      bufnr = 1,
+      row = 10,
+      col = 20,
+      ns = 100,
+      hl_group = "TestHighlight",
+    })
+
+    eq(1, state.opts.bufnr)
+  end)
+
+  it("should handle stop with active <= 0", function()
+    state = new("test_stop", {
+      kind = "statusline",
+      pattern = {
+        frames = { "a", "b" },
+        interval = 100,
+      },
+    })
+
+    -- Start the spinner to change status from STOPPED to RUNNING
+    state:start()
+    state.status = require("spinner.status").RUNNING -- Explicitly set to RUNNING
+
+    -- Manually set active to 0 to trigger the condition
+    state.active = 0
+    local was_fully_stopped, needs_ui_refresh = state:stop()
+
+    eq(false, was_fully_stopped)
+    eq(false, needs_ui_refresh)
+  end)
+
+  it("should handle config with event attachment", function()
+    -- Mock the event.attach function
+    local original_attach = require("spinner.event").attach
+    local attach_called = false
+    local attach_params = {}
+
+    require("spinner.event").attach = function(id, event)
+      attach_called = true
+      attach_params = { id = id, event = event }
+    end
+
+    local lsp_event = {
+      lsp = {
+        progress = true,
+        client_names = { "test-client" },
+      },
+    }
+
+    state = new("test_config_event", {
+      kind = "statusline",
+      pattern = {
+        frames = { "a", "b" },
+        interval = 100,
+      },
+      attach = lsp_event,
+    })
+
+    -- Config with attach option
+    state:config({ attach = lsp_event })
+
+    eq(true, attach_called)
+    eq("test_config_event", attach_params.id)
+    eq(lsp_event, attach_params.event)
+
+    -- Restore original function
+    require("spinner.event").attach = original_attach
+  end)
+
+  it("should handle custom spinner without on_update_ui", function()
+    -- Capture notification calls
+    local original_notify = vim.notify
+    local notify_called = false
+    local notify_msg = nil
+
+    ---@diagnostic disable-next-line: duplicate-set-field
+    vim.notify = function(msg)
+      notify_called = true
+      notify_msg = msg
+    end
+
+    -- Create a custom spinner without on_update_ui
+    local success = pcall(function()
+      return new("test_custom", {
+        kind = "custom",
+        -- Missing on_update_ui
+      })
+    end)
+
+    eq(true, success)
+    eq(true, notify_called)
+    assert.truthy(
+      notify_msg
+        and string.find(
+          notify_msg,
+          "custom spinner must provided option on_update_ui"
+        )
+    )
+
+    -- Restore original notify
+    vim.notify = original_notify
+  end)
+
+  it("should validate cursor-specific options completely", function()
+    state = new("test_cursor_complete", {
+      kind = "cursor",
+      hl_group = "TestHighlight",
+      winblend = 50,
+      zindex = 10,
+      row = 1,
+      col = 2,
+      border = "single",
+    })
+
+    eq("TestHighlight", state.opts.hl_group)
+    eq(50, state.opts.winblend)
+    eq(10, state.opts.zindex)
+    eq(1, state.opts.row)
+    eq(2, state.opts.col)
+    eq("single", state.opts.border)
+  end)
+
+  it("should validate extmark-specific options completely", function()
+    state = new("test_extmark_complete", {
+      kind = "extmark",
+      bufnr = 1,
+      row = 10,
+      col = 20,
+      ns = 100,
+      hl_group = "TestHighlight",
+    })
+
+    eq(1, state.opts.bufnr)
+    eq(10, state.opts.row)
+    eq(20, state.opts.col)
+    eq(100, state.opts.ns)
+    eq("TestHighlight", state.opts.hl_group)
+  end)
 end)
