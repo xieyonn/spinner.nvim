@@ -1,5 +1,6 @@
-[![Latest Release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/releases/latest)
 [![codecov](https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main)](https://codecov.io/gh/xieyonn/spinner.nvim)
+[![Latest Release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/releases/latest)
+[![License](https://img.shields.io/github/license/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/blob/main/LICENSE)
 
 Extensible spinner framework for Neovim plugins and UI.
 
@@ -25,7 +26,7 @@ Extensible spinner framework for Neovim plugins and UI.
 
 # Getting Started
 
-## Concept
+## Design
 
 Neovim's UI components (`statusline`, `tabline`, `winbar`, `extmark`,
 `float window`, `cmdline`) do not refresh automatically. To render dynamic spinners
@@ -272,7 +273,7 @@ vim.o.tabline = vim.o.tabline .. "%!v:lua.my_spinner()"
 
 > spinner.nvim use `vim.cmd("redrawtabline")` to refresh tabline.
 > if you use a plugin to setup tabline, you may need to provide a `on_update_ui`
-> option to refresh tabline. See [statusline](##Statusline).
+> option to refresh tabline. See [statusline](#statusline).
 
 ## Winbar
 
@@ -297,7 +298,7 @@ vim.o.winbar = vim.o.winbar .. "%!v:lua.my_spinner()"
 
 > spinner.nvim use `vim.cmd("redrawstatus")` to refresh winbar.
 > if you use a plugin to setup winbar, you may need to provide a `on_update_ui`
-> option to refresh tabline. See [statusline](##statusline).
+> option to refresh tabline. See [statusline](#statusline).
 
 ## Cursor
 
@@ -733,7 +734,7 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 what you would like to change.
 
 Run `make test` to run unit tests.
-RUn `make cov` to generate test coverage.
+Run `make cov` to generate test coverage.
 Run `make fmt` to format code style.
 Run `make doc` to generate vim doc from `README.md`
 
