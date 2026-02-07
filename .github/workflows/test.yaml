@@ -10,6 +10,7 @@ on:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -38,10 +39,25 @@ jobs:
         with:
           luarocksVersion: "3.13.0"
 
-      - name: Install busted
+      - name: Install dependencies
         run: |
           luarocks install busted
+          luarocks install luacov
 
       - name: Run tests
         run: |
-          busted
+          if [[ "${{ matrix.neovim_version }}" = "stable" ]]; then
+            make cov
+          else
+            make test
+          fi
+        env:
+          LUACOV: ${{ matrix.neovim_version == 'stable' && '1' || '' }}
+
+      - name: Upload coverage to Codecov
+        if: matrix.neovim_version == 'stable'
+        uses: codecov/codecov-action@v5
+        with:
+          files: luacov.report.out
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}

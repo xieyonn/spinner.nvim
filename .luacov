@@ -1,0 +1,11 @@
+return {
+  include = {
+    "lua/spinner",
+  },
+  exclude = {
+    "lua/spinner/event",
+    "lua/spinner/ui",
+    "lua/spinner/pattern",
+    "lua/spinner/config",
+  },
+}

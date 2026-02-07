@@ -1,5 +1,11 @@
 # spinner.nvim
 
+<div align="center"><p>
+
+[![codecov](https://codecov.io/gh/xieyonn/spinner.nvim/graph/badge.svg)](https://codecov.io/gh/xieyonn/spinner.nvim)
+
+</div>
+
 Extensible spinner framework for Neovim plugins and UI.
 
 <img src="https://github.com/user-attachments/assets/0f73538e-55c5-4054-bd18-eec4b7c68bbe" width="560" />

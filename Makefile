@@ -5,7 +5,7 @@ MD_FILES := README.md
 SH_FILES := test/bin/lua.sh scripts/**
 YAML_FILES := .github/workflows/test.yaml .github/workflows/stylua.yaml
 
-.PHONY: fmt test doc
+.PHONY: fmt test cov doc
 
 fmt:
 	@stylua $(LUA_FILES)
@@ -14,5 +14,10 @@ fmt:
 	@shfmt -w --indent 4 -bn -ci -sr $(SH_FILES)
 test:
 	@busted
+cov:
+	@rm -f luacov.stats.out luacov.report.out
+	@LUACOV=1 busted
+	@luacov
+	@sed -n '/Summary/,$$p' luacov.report.out
 doc:
 	@scripts/doc.sh
