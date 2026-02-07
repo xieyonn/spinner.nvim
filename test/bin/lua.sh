@@ -33,13 +33,15 @@ while getopts 'ilEve:' opt; do
     esac
 done
 
-if [ -n "$lua_expr" ]; then
+if [[ -n "$lua_expr" ]]; then
     nvim --headless -c "lua $lua_expr" -c 'quitall!'
-else
-    if [ -n "$LUACOV" ]; then
-        # Run with luacov and ensure stats are saved by wrapping the script
-        LUA_WRAPPER=$(mktemp)
-        cat << EOF > "$LUA_WRAPPER"
+    exit 0
+fi
+
+if [[ -n "$LUACOV" ]]; then
+    # Run with luacov and ensure stats are saved by wrapping the script
+    LUA_WRAPPER=$(mktemp)
+    cat << EOF > "$LUA_WRAPPER"
 local runner = require('luacov.runner')
 runner.init()
 -- Neovim -l passes script as arg[1], and subsequent args as arg[2]...
@@ -53,9 +55,9 @@ _G.arg = script_args
 dofile(original_script)
 runner.save_stats()
 EOF
-        nvim -l "$LUA_WRAPPER" "$@"
-        rm "$LUA_WRAPPER"
-    else
-        nvim -l "$@"
-    fi
+    nvim -l "$LUA_WRAPPER" "$@"
+    rm "$LUA_WRAPPER"
+    exit 0
 fi
+
+nvim -l "$@"

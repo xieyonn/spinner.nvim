@@ -25,7 +25,7 @@ _main() {
         "--shift-heading-level-by=0"
         "--metadata=project:spinner"
         "--metadata=toc:true"
-        "--metadata=description:A lightweight plugin for displaying animated spinners in Neovim."
+        "--metadata=description:Extensible spinner framework for Neovim plugins and UI"
         "--metadata=titledatepattern:'%Y %B %d'"
         "--metadata=dedupsubheadings:false"
         "--metadata=ignorerawblocks:true"

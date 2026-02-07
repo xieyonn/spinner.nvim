@@ -258,4 +258,110 @@ describe("engine", function()
       assert.spy(engine.scheduler.schedule).was.called(1)
     end
   )
+
+  it("should handle UI update errors gracefully", function()
+    -- Mock vim.notify to capture notifications
+    local original_notify = vim.notify
+    local notify_called = false
+    local notify_msg = nil
+
+    ---@diagnostic disable-next-line :duplicate-set-field
+    vim.notify = function(msg, _)
+      notify_called = true
+      notify_msg = msg
+    end
+
+    -- Create a real scheduler and state
+    local scheduler = require("spinner.scheduler").new()
+    engine = require("spinner.engine").new(scheduler)
+
+    -- Create a state with an updater that throws an error
+    local error_state = require("spinner.state").new("error_test", {
+      kind = "statusline", -- Need to specify kind
+      pattern = {
+        frames = { "a", "b" },
+        interval = 100,
+      },
+    })
+
+    error_state.ui_updater = function()
+      error("Test error in UI updater")
+    end
+    error_state.ui_scope = "error_scope"
+
+    -- Trigger UI update which should catch the error
+    engine:update_ui(error_state)
+
+    -- Process the scheduler immediately to trigger the error handling
+    -- Since we're using a real scheduler, we need to wait for it to process
+    vim.wait(100) -- Wait 100ms for scheduler to process
+
+    -- Check that notification was sent (the error should have been caught)
+    eq(true, notify_called)
+    assert.truthy(notify_msg and string.find(notify_msg, "fail to refresh ui"))
+
+    -- Restore original notify
+    vim.notify = original_notify
+  end)
+
+  it("should schedule step when start returns a next_time", function()
+    -- Create a real scheduler and state
+    local scheduler = require("spinner.scheduler").new()
+    local engine = require("spinner.engine").new(scheduler)
+
+    local state_with_next_time =
+      require("spinner.state").new("next_time_test", {
+        kind = "statusline", -- Need to specify kind
+        pattern = {
+          frames = { "a", "b" },
+          interval = 100,
+        },
+        initial_delay_ms = 10, -- Small delay to trigger next_time scheduling
+      })
+
+    state_with_next_time.ui_updater = function() end
+    state_with_next_time.ui_scope = "statusline"
+
+    -- Add the state to the engine's state map
+    engine.state_map["next_time_test"] = state_with_next_time
+
+    -- Spy on the step method to check if it's called
+    local step_spy = spy.on(engine, "step")
+
+    -- Start the spinner - this should schedule a step
+    engine:start("next_time_test")
+
+    -- Wait for scheduler to process
+    vim.wait(100)
+
+    ---@diagnostic disable-next-line :param-type-mismatch
+    assert.spy(engine.step).was.called_at_least(1)
+
+    -- Clean up spy
+    step_spy:revert()
+  end)
+
+  it("should config spinner options", function()
+    local config_called = false
+    local config_opts = nil
+
+    local state_for_config = {
+      config = function(_, opts)
+        config_called = true
+        config_opts = opts
+      end,
+      opts = { kind = "statusline" },
+      ui_scope = "statusline",
+      ui_updater = function() end,
+    }
+    engine.state_map["config_test"] = state_for_config
+
+    local test_opts = { pattern = "dots", ttl_ms = 5000 }
+
+    -- Config the spinner with new options
+    engine:config("config_test", test_opts)
+
+    eq(true, config_called)
+    eq(test_opts, config_opts)
+  end)
 end)
