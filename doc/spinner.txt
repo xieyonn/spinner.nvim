@@ -3,13 +3,14 @@
 ==============================================================================
 Table of Contents                                  *spinner-table-of-contents*
 
-1. Features                                                 |spinner-features|
-2. Getting Started                                   |spinner-getting-started|
+1. spinner.nvim                                         |spinner-spinner.nvim|
+2. Features                                                 |spinner-features|
+3. Getting Started                                   |spinner-getting-started|
   - Design                                                    |spinner-design|
   - Installation                                        |spinner-installation|
   - Setup                                                      |spinner-setup|
-3. Example                                                   |spinner-example|
-4. Usage                                                       |spinner-usage|
+4. Example                                                   |spinner-example|
+5. Usage                                                       |spinner-usage|
   - Statusline                                            |spinner-statusline|
   - Tabline                                                  |spinner-tabline|
   - Winbar                                                    |spinner-winbar|
@@ -23,23 +24,27 @@ Table of Contents                                  *spinner-table-of-contents*
   - Initial Delay                                      |spinner-initial-delay|
   - Placeholder                                          |spinner-placeholder|
   - Custom Formatting                              |spinner-custom-formatting|
-5. Custom Spinner                                     |spinner-custom-spinner|
-6. Commands                                                 |spinner-commands|
-7. API Reference                                       |spinner-api-reference|
-8. Contributing                                         |spinner-contributing|
-9. Thanks                                                     |spinner-thanks|
-10. Links                                                      |spinner-links|
+6. Custom Spinner                                     |spinner-custom-spinner|
+7. Commands                                                 |spinner-commands|
+8. API Reference                                       |spinner-api-reference|
+9. Contributing                                         |spinner-contributing|
+10. Thanks                                                    |spinner-thanks|
+11. Links                                                      |spinner-links|
+
+==============================================================================
+1. spinner.nvim                                         *spinner-spinner.nvim*
+
+Extensible spinner framework for Neovim plugins and UI.
+
 <https://codecov.io/gh/xieyonn/spinner.nvim>
 <https://github.com/xieyonn/spinner.nvim/releases/latest>
 <https://github.com/xieyonn/spinner.nvim/blob/main/LICENSE>
-
-Extensible spinner framework for Neovim plugins and UI.
 
 
 
 
 ==============================================================================
-1. Features                                                 *spinner-features*
+2. Features                                                 *spinner-features*
 
 - **Multiple UI locations**: Supports `statusline`, `tabline`, `winbar`, `cursor`,
     `extmark`, and `cmdline`.
@@ -59,7 +64,7 @@ Extensible spinner framework for Neovim plugins and UI.
   require neovim >= v0.11.0
 
 ==============================================================================
-2. Getting Started                                   *spinner-getting-started*
+3. Getting Started                                   *spinner-getting-started*
 
 
 DESIGN                                                        *spinner-design*
@@ -156,7 +161,7 @@ SETUP                                                          *spinner-setup*
 
 
 ==============================================================================
-3. Example                                                   *spinner-example*
+4. Example                                                   *spinner-example*
 
 
 
@@ -229,7 +234,7 @@ Example Setup ~
 
 
 ==============================================================================
-4. Usage                                                       *spinner-usage*
+5. Usage                                                       *spinner-usage*
 
 
 STATUSLINE                                                *spinner-statusline*
@@ -569,7 +574,7 @@ receives the current text and status and returns the formatted string:
 
 
 ==============================================================================
-5. Custom Spinner                                     *spinner-custom-spinner*
+6. Custom Spinner                                     *spinner-custom-spinner*
 
 If you use a plugin to control the rendering of the statusline/tabline/winbar,
 you probably need to use option `on_update_ui` to let your plugin refresh the
@@ -602,7 +607,7 @@ render the spinner. eg:
 
 
 ==============================================================================
-6. Commands                                                 *spinner-commands*
+7. Commands                                                 *spinner-commands*
 
 `spinner.nvim` provides a command `Spinner`:
 
@@ -618,7 +623,7 @@ With tab completion for spinner IDs.
   You may never use it, except when testing your configuration.
 
 ==============================================================================
-7. API Reference                                       *spinner-api-reference*
+8. API Reference                                       *spinner-api-reference*
 
 Click to expand ~
 
@@ -793,28 +798,29 @@ Click to expand ~
 
 
 ==============================================================================
-8. Contributing                                         *spinner-contributing*
+9. Contributing                                         *spinner-contributing*
 
 Pull requests are welcome! For major changes, please open an issue first to
 discuss what you would like to change.
 
-Run `make test` to run unit tests. Run `make cov` to generate test coverage.
-Run `make fmt` to format code style. Run `make doc` to generate vim doc from
-`README.md`
+- Run `make test` to run unit tests.
+- Run `make cov` to generate test coverage.
+- Run `make fmt` to format code style.
+- Run `make doc` to generate vim doc from `README.md`
 
 
 ==============================================================================
-9. Thanks                                                     *spinner-thanks*
+10. Thanks                                                    *spinner-thanks*
 
 - cli-spinners <https://github.com/sindresorhus/cli-spinners> Adopted a lot of spinner patterns from there.
 - panvimdoc <https://github.com/kdheepak/panvimdoc> Use this plugin to generate vim docs.
 
 ==============================================================================
-10. Links                                                      *spinner-links*
+11. Links                                                      *spinner-links*
 
-1. *codecov*: https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main
-2. *Latest Release*: https://img.shields.io/github/v/release/xieyonn/spinner.nvim
-3. *License*: https://img.shields.io/github/license/xieyonn/spinner.nvim
+1. *coverage*: https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main
+2. *release*: https://img.shields.io/github/v/release/xieyonn/spinner.nvim
+3. *license*: https://img.shields.io/github/license/xieyonn/spinner.nvim
 
 Generated by panvimdoc <https://github.com/kdheepak/panvimdoc>
 
