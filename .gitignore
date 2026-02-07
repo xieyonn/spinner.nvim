@@ -1,2 +1,6 @@
 .xdg/
 .deps/
+
+# LuaCov
+luacov.stats.out
+luacov.report.out
