@@ -244,18 +244,21 @@ function M:render()
   if self.status == STATUS.DELAYED or self.status == STATUS.STOPPED then
     -- apply placeholder
     if self.opts.kind == "cmdline" then
-      text = "" -- Cmdline spinners don't show placeholder
-    else
-      text = self.opts.placeholder or "" --[[@as string]]
+      -- cmdline text do not support placeholder
+      return ""
     end
+
+    text = self.opts.placeholder or "" --[[@as string]]
   else
     text = self.opts.pattern.frames[self.index] or ""
   end
 
+  -- Add highlight markers first if needed (only for cmdline and if text is not empty)
   if text ~= "" and self.opts.kind == "cmdline" then
     text = "{{SPINNER_HIGHLIGHT}}" .. text .. "{{END_HIGHLIGHT}}"
   end
 
+  -- Apply fmt function to the text (which may include highlight markers)
   if self.opts.fmt then
     text = self.opts.fmt({
       text = text,

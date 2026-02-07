@@ -719,4 +719,30 @@ describe("state", function()
       eq("statusline", state.opts.kind)
     end
   )
+
+  it(
+    "render() should use fmt function to format spinner text when kind is cmdline",
+    function()
+      local fmt_func = function(event)
+        return "[" .. event.text .. "]"
+      end
+
+      state = new("test_cmdline_fmt", {
+        kind = "cmdline",
+        pattern = {
+          frames = { "a", "b" },
+          interval = 100,
+        },
+        fmt = fmt_func,
+      })
+
+      -- Test when spinner is stopped (should be empty for cmdline, fmt receives empty string)
+      eq("", state:render())
+
+      -- Start the spinner and test formatting
+      state:start()
+      -- fmt function receives "{{SPINNER_HIGHLIGHT}}a{{END_HIGHLIGHT}}" and wraps it in brackets
+      eq("[{{SPINNER_HIGHLIGHT}}a{{END_HIGHLIGHT}}]", state:render())
+    end
+  )
 end)
