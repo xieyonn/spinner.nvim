@@ -17,14 +17,15 @@ Table of Contents                                  *spinner-table-of-contents*
   - Cursor                                                    |spinner-cursor|
   - Extmark                                                  |spinner-extmark|
   - Cmdline                                                  |spinner-cmdline|
+  - Custom Spinner                                    |spinner-custom-spinner|
+6. Options                                                   |spinner-options|
   - Lsp Integration                                  |spinner-lsp-integration|
-  - Custom Pattern                                    |spinner-custom-pattern|
-  - Highlight                                              |spinner-highlight|
+  - Pattern                                                  |spinner-pattern|
   - TTL                                                          |spinner-ttl|
   - Initial Delay                                      |spinner-initial-delay|
   - Placeholder                                          |spinner-placeholder|
-  - Custom Formatting                              |spinner-custom-formatting|
-6. Custom Spinner                                     |spinner-custom-spinner|
+  - Formatting                                            |spinner-formatting|
+  - Highlight                                              |spinner-highlight|
 7. Commands                                                 |spinner-commands|
 8. API Reference                                       |spinner-api-reference|
 9. Contributing                                         |spinner-contributing|
@@ -59,6 +60,7 @@ Extensible spinner framework for Neovim plugins and UI.
     in your own plugins and configurations.
 - **Configurable spinner patterns**: Built-in presets with 60+ patterns <https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua>
     for various use cases.
+
 
 
 ==============================================================================
@@ -445,6 +447,42 @@ Configure a `cmdline` spinner with id `my_spinner`.
 <
 
 
+CUSTOM SPINNER                                        *spinner-custom-spinner*
+
+If you use a plugin to control the rendering of the statusline/tabline/winbar,
+you probably need to use option `on_update_ui` to let your plugin refresh the
+UI component.
+
+see |spinner-statusline|.
+
+Alternatively, you can use option `on_update_ui` to implement a `custom`
+spinner.
+
+`spinner.nvim` only manages the spinner state transitions, you control where to
+render the spinner. eg:
+
+- in a prompt buffer.
+- on the border of an input window.
+
+>lua
+    require("spinner").config("my_spinner", {
+      kind = "custom",
+      on_update_ui = function(event)
+        local status = event.status
+        local text = event.text
+    
+        -- do what you want
+      end,
+    })
+<
+
+`on_update_ui` function signature see |spinner-api-reference|
+
+
+==============================================================================
+6. Options                                                   *spinner-options*
+
+
 LSP INTEGRATION                                      *spinner-lsp-integration*
 
 Configure spinner with `attach` option to make it listen to `LspProgress` or
@@ -473,7 +511,7 @@ Configure spinner with `attach` option to make it listen to `LspProgress` or
 <
 
 
-CUSTOM PATTERN                                        *spinner-custom-pattern*
+PATTERN                                                      *spinner-pattern*
 
 `spinner.nvim` provides a large number of built-in patterns. See patterns
 <https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua>
@@ -488,25 +526,6 @@ Or you can set up a custom pattern:
         frames = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" },
       },
     })
-<
-
-
-HIGHLIGHT                                                  *spinner-highlight*
-
-`cursor` / `extmark` / `cmdline` spinners can have a `hl_group` option to
-change text color.
-
->lua
-    require("spinner").config("cursor", {
-      kind = "cursor",
-      hl_group = "Spinner",
-    })
-<
-
-The hl_group `Spinner` uses fg of `Comment` by default.
-
->lua
-    vim.api.nvim_set_hl(0, "Spinner", { fg = "xxx" })
 <
 
 
@@ -558,7 +577,7 @@ length empty string when spinner is idle)
 
   cmdline spinner do not support (and needed) placeholder
 
-CUSTOM FORMATTING                                  *spinner-custom-formatting*
+FORMATTING                                                *spinner-formatting*
 
 You can customize the spinner text format using the `fmt` option. This function
 receives the current text and status and returns the formatted string:
@@ -575,37 +594,23 @@ receives the current text and status and returns the formatted string:
 <
 
 
-==============================================================================
-6. Custom Spinner                                     *spinner-custom-spinner*
+HIGHLIGHT                                                  *spinner-highlight*
 
-If you use a plugin to control the rendering of the statusline/tabline/winbar,
-you probably need to use option `on_update_ui` to let your plugin refresh the
-UI component.
-
-see |spinner-statusline|.
-
-Alternatively, you can use option `on_update_ui` to implement a `custom`
-spinner.
-
-`spinner.nvim` only manages the spinner state transitions, you control where to
-render the spinner. eg:
-
-- in a prompt buffer.
-- on the border of an input window.
+`cursor` / `extmark` / `cmdline` spinners can have a `hl_group` option to
+change text color.
 
 >lua
-    require("spinner").config("my_spinner", {
-      kind = "custom",
-      on_update_ui = function(event)
-        local status = event.status
-        local text = event.text
-    
-        -- do what you want
-      end,
+    require("spinner").config("cursor", {
+      kind = "cursor",
+      hl_group = "Spinner",
     })
 <
 
-`on_update_ui` function signature see |spinner-api-reference|
+The hl_group `Spinner` uses fg of `Comment` by default.
+
+>lua
+    vim.api.nvim_set_hl(0, "Spinner", { fg = "xxx" })
+<
 
 
 ==============================================================================
@@ -811,11 +816,12 @@ contribute to this project.
 
 - cli-spinners <https://github.com/sindresorhus/cli-spinners> Adopted a lot of spinner patterns from there.
 - panvimdoc <https://github.com/kdheepak/panvimdoc> Use this plugin to generate vim docs.
+- nvim-dap <https://github.com/mfussenegger/nvim-dap> Borrow `splitstr` function used in cmdline command completion.
 
 ==============================================================================
 11. Links                                                      *spinner-links*
 
-1. *coverage*: https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main
+1. *coverage*: https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main&logo=codecov
 2. *release*: https://img.shields.io/github/v/release/xieyonn/spinner.nvim
 3. *Requires Neovim 0.11+*: https://img.shields.io/badge/requires-nvim%200.11%2B-9cf?logo=neovim
 4. *license*: https://img.shields.io/github/license/xieyonn/spinner.nvim
