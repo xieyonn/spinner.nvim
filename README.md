@@ -4,6 +4,7 @@ Extensible spinner framework for Neovim plugins and UI.
 
 [![coverage](https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main)](https://codecov.io/gh/xieyonn/spinner.nvim)
 [![release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/releases/latest)
+[![Requires Neovim 0.11+](https://img.shields.io/badge/requires-nvim%200.11%2B-9cf?logo=neovim)](https://neovim.io/)
 [![license](https://img.shields.io/github/license/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/blob/main/LICENSE)
 
 <img src="https://github.com/user-attachments/assets/0f73538e-55c5-4054-bd18-eec4b7c68bbe" width="560" />
@@ -23,8 +24,6 @@ Extensible spinner framework for Neovim plugins and UI.
   in your own plugins and configurations.
 - **Configurable spinner patterns**: Built-in presets with 60+ [patterns](https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua)
   for various use cases.
-
-> require neovim >= v0.11.0
 
 # Getting Started
 
