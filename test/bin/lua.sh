@@ -38,25 +38,8 @@ if [[ -n "$lua_expr" ]]; then
     exit 0
 fi
 
-if [[ -n "$LUACOV" ]]; then
-    # Run with luacov and ensure stats are saved by wrapping the script
-    LUA_WRAPPER=$(mktemp)
-    cat << EOF > "$LUA_WRAPPER"
-local runner = require('luacov.runner')
-runner.init()
--- Neovim -l passes script as arg[1], and subsequent args as arg[2]...
--- But when we dofile, we want to preserve the original arg table for the script
-local original_script = '$1'
-local script_args = {}
-for i=2,#arg do
-    table.insert(script_args, arg[i])
-end
-_G.arg = script_args
-dofile(original_script)
-runner.save_stats()
-EOF
-    nvim -l "$LUA_WRAPPER" "$@"
-    rm "$LUA_WRAPPER"
+if [ -n "$LUACOV" ]; then
+    nvim -l <(echo "local r=require('luacov.runner');r.init();local f=table.remove(arg,1);_G.arg=arg;dofile(f);r.save_stats()") "$@"
     exit 0
 fi
 
