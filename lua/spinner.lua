@@ -3,10 +3,15 @@ local scheduler = require("spinner.scheduler").new()
 local engine = require("spinner.engine").new(scheduler)
 
 require("spinner.cmd").setup(engine)
-require("spinner.config").setup()
 
 ---@class spinner
 local M = {}
+
+---Setup config.
+---@param opts? spinner.Config
+function M.setup(opts)
+  require("spinner.config").setup(opts)
+end
 
 ---Start spinner.
 ---@param id string spinner id.
