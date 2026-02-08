@@ -87,7 +87,7 @@ local spinner = require("spinner")
 spinner.start("id") -- Start a spinner
 spinner.stop("id") -- Stop a spinner
 spinner.pause("id") -- Pause a spinner
-spinner.config("id", opts?) -- Configure a spinner
+spinner.config("id", opts) -- Configure a spinner
 spinner.render("id") -- Get current spinner frame
 ```
 
@@ -224,7 +224,7 @@ require("spinner").config("cursor", {
   attach = {
     lsp = {
       request = {
-        -- select the methods you’re interested in. For a complete list: `:h lsp-method`
+        -- select the methods you're interested in. For a complete list: `:h lsp-method`
         -- "textDocument/definition", -- for GoToDefinition (shortcut `C-]`)
         "textDocument/hover", -- for hover (shortcut `K`)
       },
@@ -479,8 +479,8 @@ require("spinner").config("cursor", {
 
       request = {
         -- Select the methods you're interested in. For a complete list: `:h lsp-method`
-        -- "textDocument/definition", -- for GoToDefinition (shortcut C-])
-        "textDocument/hover", -- for hover (shortcut K)
+        -- "textDocument/definition", -- for GoToDefinition (shortcut `C-]`)
+        "textDocument/hover", -- for hover (shortcut `K`)
       },
 
       -- Optional, select lsp names you're interested in.
