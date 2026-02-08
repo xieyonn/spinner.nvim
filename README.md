@@ -87,7 +87,7 @@ local spinner = require("spinner")
 spinner.start("id") -- Start a spinner
 spinner.stop("id") -- Stop a spinner
 spinner.pause("id") -- Pause a spinner
-spinner.config("id" opts?) -- Configure a spinner
+spinner.config("id", opts?) -- Configure a spinner
 spinner.render("id") -- Get current spinner frame
 ```
 
