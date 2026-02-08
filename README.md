@@ -161,6 +161,10 @@ function lsp_progress()
       seen[name] = true
     end
   end
+  if #client_names == 0 then
+    return ""
+  end
+
   local spinner = require("spinner").render("lsp_progress")
 
   return table.concat(client_names, " ") .. " " .. spinner
