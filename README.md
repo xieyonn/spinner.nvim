@@ -432,16 +432,10 @@ require("spinner").config("my_spinner", {
 
 ## Custom Spinner
 
-If you use a plugin to control the rendering of the statusline/tabline/winbar,
-you probably need to use option `on_update_ui` to let your plugin refresh the
-UI component.
+Use option `on_update_ui` to implement a `custom` spinner.
 
-see [Statusline](#statusline).
-
-Alternatively, you can use option `on_update_ui` to implement a `custom` spinner.
-
-`spinner.nvim` only manages the spinner state transitions, you control where to
-render the spinner. eg:
+`spinner.nvim` only manages the spinner state transitions, you control how and
+where to render the spinner. eg:
 
 - in a prompt buffer.
 - on the border of an input window.
@@ -449,6 +443,7 @@ render the spinner. eg:
 ```lua
 require("spinner").config("my_spinner", {
   kind = "custom",
+  ui_scope = "my_custom_scope", -- optional: UI update scope for batching updates
   on_update_ui = function(event)
     local status = event.status
     local text = event.text
@@ -457,6 +452,13 @@ require("spinner").config("my_spinner", {
   end,
 })
 ```
+
+`ui_scope` defines the scope for batching UI updates. Spinners with the same `ui_scope`
+will have their UI updates combined to improve performance. For example:
+
+- All `statusline` spinners share the `statusline` scope and update together.
+- All `tabline` spinners share the `tabline` scope and update together.
+- Custom spinners with the same `ui_scope` will update together.
 
 `on_update_ui` function signature see [API Reference](#api-reference)
 
