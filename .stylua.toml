@@ -1,4 +1,4 @@
-syntax = "All"
+syntax = "Lua51"
 column_width = 80
 line_endings = "Unix"
 indent_type = "Spaces"
