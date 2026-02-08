@@ -21,8 +21,8 @@ function M.new()
   return setmetatable({
     timer = nil,
     tasks = heap.new(function(a, b)
-      -- if we have two job with same time, do not override it.
-      return a.at <= b.at
+      -- Use strict less-than to maintain FIFO order for tasks with same time
+      return a.at < b.at
     end),
   }, M)
 end
