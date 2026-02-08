@@ -97,6 +97,9 @@ local function validate_opts(opts)
     "opts.kind",
     opts.kind,
     function(x)
+      if x == nil then
+        return true
+      end
       return type(x) == "string"
         and vim.tbl_contains({
           "statusline",
@@ -108,7 +111,7 @@ local function validate_opts(opts)
           "custom",
         }, x)
     end,
-    false,
+    true,
     "kind must be a string and one of: statusline, tabline, winbar, cursor, extmark, cmdline, custom"
   )
 
@@ -118,18 +121,22 @@ local function validate_opts(opts)
     function(x)
       if x == nil then
         return true
-      elseif type(x) == "string" then
+      end
+      if type(x) == "string" then
+        ---@cast x string
         local patterns = require("spinner.pattern")
         return patterns[x] ~= nil
-      elseif type(x) == "table" then
+      end
+      if type(x) == "table" then
+        -- If it's a table, validate that it has interval and frames
+        ---@cast x spinner.Pattern
         return x.interval ~= nil
           and type(x.interval) == "number"
           and x.frames ~= nil
           and type(x.frames) == "table"
           and #x.frames > 0
-      else
-        return false
       end
+      return false
     end,
     true,
     "pattern must be a string (existing pattern name) or a table with interval (number) and frames (non-empty table)"
@@ -143,45 +150,51 @@ local function validate_opts(opts)
     return x == nil or (type(x) == "number" and x >= 0)
   end, true, "initial_delay_ms must be a number >= 0")
 
-  vim.validate("opts.placeholder", opts.placeholder, function(x)
-    return x == nil or type(x) == "string" or type(x) == "boolean"
-  end, true, "placeholder must be a string or boolean")
+  vim.validate(
+    "opts.placeholder",
+    opts.placeholder,
+    { "string", "boolean" },
+    true,
+    "placeholder must be a string or boolean"
+  )
 
   if opts.kind == "cursor" then
-    vim.validate("opts.hl_group", opts.hl_group, function(x)
-      return x == nil or type(x) == "string"
-    end, true, "hl_group must be a string")
+    vim.validate(
+      "opts.hl_group",
+      opts.hl_group,
+      "string",
+      true,
+      "hl_group must be a string"
+    )
     vim.validate("opts.winblend", opts.winblend, function(x)
       return x == nil or (type(x) == "number" and x >= 0 and x <= 100)
     end, true, "winblend must be a number between 0 and 100")
     vim.validate("opts.zindex", opts.zindex, function(x)
       return x == nil or (type(x) == "number" and x >= 0)
     end, true, "zindex must be a number >= 0")
-    vim.validate("opts.row", opts.row, function(x)
-      return x == nil or type(x) == "number"
-    end, true, "row must be a number")
-    vim.validate("opts.col", opts.col, function(x)
-      return x == nil or type(x) == "number"
-    end, true, "col must be a number")
+    vim.validate("opts.row", opts.row, "number", true, "row must be a number")
+    vim.validate("opts.col", opts.col, "number", true, "col must be a number")
     vim.validate("opts.border", opts.border, { "string", "table" }, true)
   end
 
   if opts.kind == "extmark" then
-    vim.validate("opts.bufnr", opts.bufnr, function(x)
-      return x == nil or type(x) == "number"
-    end, true, "bufnr must be a number")
-    vim.validate("opts.row", opts.row, function(x)
-      return x == nil or type(x) == "number"
-    end, true, "row must be a number")
-    vim.validate("opts.col", opts.col, function(x)
-      return x == nil or type(x) == "number"
-    end, true, "col must be a number")
-    vim.validate("opts.ns", opts.ns, function(x)
-      return x == nil or type(x) == "number"
-    end, true, "ns must be a number")
-    vim.validate("opts.hl_group", opts.hl_group, function(x)
-      return x == nil or type(x) == "string"
-    end, true, "hl_group must be a string")
+    vim.validate(
+      "opts.bufnr",
+      opts.bufnr,
+      "number",
+      true,
+      "bufnr must be a number"
+    )
+    vim.validate("opts.row", opts.row, "number", true, "row must be a number")
+    vim.validate("opts.col", opts.col, "number", true, "col must be a number")
+    vim.validate("opts.ns", opts.ns, "number", true, "ns must be a number")
+    vim.validate(
+      "opts.hl_group",
+      opts.hl_group,
+      "string",
+      true,
+      "hl_group must be a string"
+    )
   end
 
   if opts.kind == "custom" and opts.on_update_ui == nil then

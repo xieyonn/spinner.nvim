@@ -39,6 +39,13 @@ describe("state", function()
     eq("custom", state.opts.kind)
   end)
 
+  it("new() kind can be optional", function()
+    state = new("test", {
+      placeholder = "abc",
+    })
+    eq("custom", state.opts.kind)
+  end)
+
   it("new() opts.pattern is a string", function()
     state = new("test", {
       kind = "statusline",
