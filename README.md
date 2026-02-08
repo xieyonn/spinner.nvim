@@ -7,7 +7,7 @@ Extensible spinner framework for Neovim plugins and UI.
 [![Requires Neovim 0.11+](https://img.shields.io/badge/requires-nvim%200.11%2B-9cf?logo=neovim)](https://neovim.io/)
 [![license](https://img.shields.io/github/license/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/blob/main/LICENSE)
 
-<img src="https://github.com/user-attachments/assets/0f73538e-55c5-4054-bd18-eec4b7c68bbe" width="560" />
+<img src="https://github.com/user-attachments/assets/3b12eceb-6b70-49af-b106-ead86246883d" width="560" />
 
 # Features
 
