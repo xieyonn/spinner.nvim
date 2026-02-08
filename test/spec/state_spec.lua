@@ -833,6 +833,16 @@ describe("state", function()
     require("spinner.event").attach = original_attach
   end)
 
+  it("extmark spinner use default hl_group", function()
+    local extmark_hl_group =
+      require("spinner.config").global.extmark_spinner.hl_group
+    state = new("extmark", {
+      kind = "extmark",
+    })
+
+    eq(extmark_hl_group, state.opts.hl_group)
+  end)
+
   it("should handle custom spinner without on_update_ui", function()
     -- Capture notification calls
     local original_notify = vim.notify

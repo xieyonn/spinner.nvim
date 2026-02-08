@@ -147,6 +147,11 @@ require("spinner").setup({
     -- CursorSpinner window option.
     border = "none",
   }
+
+  extmark_spinner = {
+    -- Highlight group for text, use fg of `Comment` by default.
+    hl_group = "Spinner",
+  },
 })
 ```
 
@@ -406,7 +411,6 @@ require("spinner").config(id, {
   row = row, -- must be provided, which line, 0-based
   col = col, -- must be provided, which col, 0-based
 
-  zindex = 50, -- zindex, optional
   ns = 0, -- namespace, optional
   hl_group = "Spinner" -- hl_group for text, optional
 })
@@ -755,7 +759,8 @@ local STATUS = {
 ---@field ttl_ms? integer -- Default TTL
 ---@field initial_delay_ms? integer -- Default delay
 ---@field placeholder? string|boolean -- Default placeholder
----@field cursor_spinner spinner.CursorSpinnerConfig -- Default cursor config
+---@field cursor_spinner? spinner.CursorSpinnerConfig -- Default cursor config
+---@field extmark_spinner? spinner.ExtmarkSpinnerConfig -- Default extmark config
 ---
 ---@class spinner.CursorSpinnerConfig
 ---@field hl_group? string -- Default highlight group
@@ -764,6 +769,9 @@ local STATUS = {
 ---@field row? integer -- Default row offset 0-based
 ---@field col? integer -- Default column offset 0-based
 ---@field border? string -- Default border style
+---
+---@class spinner.ExtmarkSpinnerConfig
+---@field hl_group? string
 ```
 
 </details>

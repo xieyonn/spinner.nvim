@@ -233,6 +233,11 @@ local function merge_opts(opts)
     opts.border = vim.F.if_nil(opts.border, config.global.cursor_spinner.border)
   end
 
+  if opts.kind == "extmark" then
+    opts.hl_group =
+      vim.F.if_nil(opts.hl_group, config.global.extmark_spinner.hl_group)
+  end
+
   return opts
 end
 

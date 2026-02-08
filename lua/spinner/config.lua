@@ -5,7 +5,8 @@ local M = {}
 ---@field ttl_ms? integer
 ---@field initial_delay_ms? integer
 ---@field placeholder? string|boolean
----@field cursor_spinner spinner.CursorSpinnerConfig
+---@field cursor_spinner? spinner.CursorSpinnerConfig
+---@field extmark_spinner? spinner.ExtmarkSpinnerConfig
 ---
 ---@class spinner.CursorSpinnerConfig
 ---@field hl_group? string
@@ -14,6 +15,9 @@ local M = {}
 ---@field row? integer
 ---@field col? integer
 ---@field border? string
+---
+---@class spinner.ExtmarkSpinnerConfig
+---@field hl_group? string
 
 ---@type spinner.Config
 local default_config = {
@@ -56,6 +60,11 @@ local default_config = {
 
     -- CursorSpinner window option.
     border = "none",
+  },
+
+  extmark_spinner = {
+    -- Highlight group for text, use fg of `Comment` by default.
+    hl_group = "Spinner",
   },
 }
 
@@ -103,9 +112,8 @@ local function validate_config(opts)
     return x == nil or type(x) == "string" or type(x) == "boolean"
   end, true, "placeholder must be a string or boolean")
 
-  if opts.cursor_spinner ~= nil then
-    local cs = opts.cursor_spinner
-
+  local cs = opts.cursor_spinner
+  if cs ~= nil then
     vim.validate("cs.hl_group", cs.hl_group, function(x)
       return x == nil or type(x) == "string"
     end, true, "hl_group must be a string")
@@ -129,6 +137,13 @@ local function validate_config(opts)
     vim.validate("cs.border", cs.border, function(x)
       return x == nil or type(x) == "string"
     end, true, "border must be a string")
+  end
+
+  local es = opts.extmark_spinner
+  if es ~= nil then
+    vim.validate("es.hl_group", es.hl_group, function(x)
+      return x == nil or type(x) == "string"
+    end, true, "hl_group must be a string")
   end
 end
 

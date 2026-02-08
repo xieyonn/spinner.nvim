@@ -3,7 +3,7 @@
 LUA_FILES := $(shell find . -name "*.lua" ! -path "./.git/*")
 MD_FILES := README.md CONTRIBUTING.md
 SH_FILES := test/bin/lua.sh scripts/**
-YAML_FILES := .github/workflows/test.yaml .github/workflows/stylua.yaml
+YAML_FILES := $(shell find . \( -name "*.yml" -o -name "*.yaml" \) ! -path "./.git/*")
 
 .PHONY: fmt test cov doc
 
