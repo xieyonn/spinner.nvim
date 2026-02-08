@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        neovim_version: ["stable", "v0.11.0"]
+        neovim_version: ["stable", "v0.11.0", "v0.10.0"]
 
     steps:
       - name: Checkout
