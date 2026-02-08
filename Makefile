@@ -1,7 +1,7 @@
 .DEFAULT_GOAL = test
 
 LUA_FILES := $(shell find . -name "*.lua" ! -path "./.git/*")
-MD_FILES := README.md
+MD_FILES := README.md CONTRIBUTING.md
 SH_FILES := test/bin/lua.sh scripts/**
 YAML_FILES := .github/workflows/test.yaml .github/workflows/stylua.yaml
 

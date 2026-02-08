@@ -736,13 +736,7 @@ local STATUS = {
 
 # Contributing
 
-Pull requests are welcome! For major changes, please open an issue first to discuss
-what you would like to change.
-
-- Run `make test` to run unit tests.
-- Run `make cov` to generate test coverage.
-- Run `make fmt` to format code style.
-- Run `make doc` to generate vim doc from `README.md`
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on how to contribute to this project.
 
 # Thanks
 
