@@ -8,6 +8,12 @@ if has_lualine and lualine then
   end
 end
 
+if vim.api.nvim__redraw then
+  return function()
+    vim.api.nvim__redraw({ statusline = true })
+  end
+end
+
 return function()
   vim.cmd("redrawstatus")
 end
