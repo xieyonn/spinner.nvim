@@ -1,6 +1,9 @@
 .xdg/
 .deps/
 
+# Vim Helptags
+doc/tags
+
 # LuaCov
 luacov.stats.out
 luacov.report.out
