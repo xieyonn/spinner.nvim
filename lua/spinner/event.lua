@@ -71,16 +71,14 @@ local M = {}
 ---@param id string
 ---@param event spinner.Event
 function M.attach(id, event)
-  if not event.lsp then
-    return
-  end
+  if event.lsp then
+    if event.lsp.progress == true then
+      lsp.progress(id, event.lsp.client_names)
+    end
 
-  if event.lsp.progress == true then
-    lsp.progress(id, event.lsp.client_names)
-  end
-
-  if event.lsp.request then
-    lsp.request(id, event.lsp.request, event.lsp.client_names)
+    if event.lsp.request then
+      lsp.request(id, event.lsp.request, event.lsp.client_names)
+    end
   end
 end
 
