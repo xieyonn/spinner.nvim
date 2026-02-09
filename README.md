@@ -30,7 +30,6 @@ Extensible spinner framework for Neovim plugins and UI.
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 - [Getting Started](#getting-started)
-    - [Design](#design)
     - [Installation](#installation)
     - [Setup](#setup)
 - [Example](#example)
@@ -60,8 +59,6 @@ Extensible spinner framework for Neovim plugins and UI.
 
 # Getting Started
 
-## Design
-
 Neovim's UI components (`statusline`, `tabline`, `winbar`, `extmark`,
 `float window`, `cmdline`) do not refresh automatically. To render dynamic spinners
 in Neovim, `spinner.nvim` refreshes the UI at fixed intervals internally.
@@ -72,13 +69,15 @@ individual spinner states.
 Each spinner can have a optional option `kind`. Different kind values indicate
 how `spinner.nvim` refresh the Neovim UI:
 
-- `statusline`: statusline
-- `tabline`: tabline
-- `winbar`: winbar
-- `extmark`: display spinners in buffer content, like diagnosis message.
-- `cursor`: display spinner next to current cursor.
-- `cmdline`: cmdline
-- `custom`: combine with `on_update_ui` to display spinner anywhere. see[Custom Spinner](#custom-spinner)
+| kind       | refresh method                                                           |
+| ---------- | ------------------------------------------------------------------------ |
+| statusline | `vim.cmd("redrawstatus)` or `vim.api.nvim__redraw({ statusline = true})` |
+| tabline    | `vim.cmd("redrawtabline)` or `vim.api.nvim__redraw({ tabline = true})`   |
+| winbar     | `vim.cmd("redrawstatus)` or `vim.api.nvim__redraw({ winbar = true})`     |
+| extmark    | `vim.api.nvim_buf_set_extmarks()`                                        |
+| cursor     | `vim.api.nvim_win_open()` + `vim.api.nvim_buf_set_lines()`               |
+| cmdline    | `vim.cmd("echo 'text'")`                                                 |
+| custom     | user option `on_update_ui(event)`                                        |
 
 Control spinners via lua api:
 
