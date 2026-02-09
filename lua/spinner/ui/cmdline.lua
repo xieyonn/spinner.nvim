@@ -27,7 +27,7 @@ return function(state)
 
     -- Display the parts with appropriate highlighting
     vim.cmd.echo(("'%s'"):format(before_highlight:gsub("'", "''")))
-    vim.cmd.echohl("Spinner")
+    vim.cmd.echohl(state.opts.hl_group or "Spinner")
     vim.cmd.echon(("'%s'"):format(highlighted_text:gsub("'", "''")))
     vim.cmd.echohl("None")
     vim.cmd.echon(("'%s'"):format(after_highlight:gsub("'", "''")))
