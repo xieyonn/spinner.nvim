@@ -30,6 +30,14 @@ Run the formatter before submitting changes:
 make fmt
 ```
 
+### Docs
+
+Update docs:
+
+```bash
+make doc
+```
+
 ## Pull Request Guidelines
 
 - Keep pull requests focused on a single feature or bug fix

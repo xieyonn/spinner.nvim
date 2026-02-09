@@ -69,6 +69,7 @@ local STATUS = require("spinner.status")
 ---
 ---@class spinner.CmdlineOpts: spinner.CoreOpts
 ---@field kind "cmdline" -- CommandLine kind
+---@field hl_group? string -- Highlight group
 ---
 ---@class spinner.OnChangeEvent
 ---@field status spinner.Status -- Current status
@@ -158,14 +159,15 @@ local function validate_opts(opts)
     "placeholder must be a string or boolean"
   )
 
+  vim.validate(
+    "opts.hl_group",
+    opts.hl_group,
+    "string",
+    true,
+    "hl_group must be a string"
+  )
+
   if opts.kind == "cursor" then
-    vim.validate(
-      "opts.hl_group",
-      opts.hl_group,
-      "string",
-      true,
-      "hl_group must be a string"
-    )
     vim.validate("opts.winblend", opts.winblend, function(x)
       return x == nil or (type(x) == "number" and x >= 0 and x <= 100)
     end, true, "winblend must be a number between 0 and 100")
@@ -188,13 +190,6 @@ local function validate_opts(opts)
     vim.validate("opts.row", opts.row, "number", true, "row must be a number")
     vim.validate("opts.col", opts.col, "number", true, "col must be a number")
     vim.validate("opts.ns", opts.ns, "number", true, "ns must be a number")
-    vim.validate(
-      "opts.hl_group",
-      opts.hl_group,
-      "string",
-      true,
-      "hl_group must be a string"
-    )
   end
 
   if opts.kind == "custom" and opts.on_update_ui == nil then
@@ -249,6 +244,11 @@ local function merge_opts(opts)
   if opts.kind == "extmark" then
     opts.hl_group =
       vim.F.if_nil(opts.hl_group, config.global.extmark_spinner.hl_group)
+  end
+
+  if opts.kind == "cmdline" then
+    opts.hl_group =
+      vim.F.if_nil(opts.hl_group, config.global.cmdline_spinner.hl_group)
   end
 
   return opts

@@ -745,12 +745,8 @@ describe("state", function()
         fmt = fmt_func,
       })
 
-      -- Test when spinner is stopped (should be empty for cmdline, fmt receives empty string)
       eq("", state:render())
-
-      -- Start the spinner and test formatting
       state:start()
-      -- fmt function receives "{{SPINNER_HIGHLIGHT}}a{{END_HIGHLIGHT}}" and wraps it in brackets
       eq("[{{SPINNER_HIGHLIGHT}}a{{END_HIGHLIGHT}}]", state:render())
     end
   )
@@ -766,6 +762,11 @@ describe("state", function()
       border = "single",
     })
 
+    eq(50, state.opts.winblend)
+    eq(10, state.opts.zindex)
+    eq(1, state.opts.row)
+    eq(2, state.opts.col)
+    eq("single", state.opts.border)
     eq("TestHighlight", state.opts.hl_group)
   end)
 
@@ -780,6 +781,28 @@ describe("state", function()
     })
 
     eq(1, state.opts.bufnr)
+    eq(10, state.opts.row)
+    eq(20, state.opts.col)
+    eq(100, state.opts.ns)
+    eq("TestHighlight", state.opts.hl_group)
+  end)
+
+  it("should validate cmdline-specific options", function()
+    state = new("test_cmdline", {
+      kind = "cmdline",
+      hl_group = "TestHighlight",
+    })
+    eq("TestHighlight", state.opts.hl_group)
+  end)
+
+  it("cmdline spinner can have default hl_group", function()
+    local cmdline_hl_group =
+      require("spinner.config").global.cmdline_spinner.hl_group
+    state = new("test_cmdline", {
+      kind = "cmdline",
+      hl_group = nil,
+    })
+    eq(cmdline_hl_group, state.opts.hl_group)
   end)
 
   it("should handle stop with active <= 0", function()

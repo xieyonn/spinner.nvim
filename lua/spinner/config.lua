@@ -7,6 +7,7 @@ local M = {}
 ---@field placeholder? string|boolean
 ---@field cursor_spinner? spinner.CursorSpinnerConfig
 ---@field extmark_spinner? spinner.ExtmarkSpinnerConfig
+---@field cmdline_spinner? spinner.CmdlineSpinnerConfig
 ---
 ---@class spinner.CursorSpinnerConfig
 ---@field hl_group? string
@@ -17,6 +18,9 @@ local M = {}
 ---@field border? string
 ---
 ---@class spinner.ExtmarkSpinnerConfig
+---@field hl_group? string
+---
+---@class spinner.CmdlineSpinnerConfig
 ---@field hl_group? string
 
 ---@type spinner.Config
@@ -63,6 +67,11 @@ local default_config = {
   },
 
   extmark_spinner = {
+    -- Highlight group for text, use fg of `Comment` by default.
+    hl_group = "Spinner",
+  },
+
+  cmdline_spinner = {
     -- Highlight group for text, use fg of `Comment` by default.
     hl_group = "Spinner",
   },

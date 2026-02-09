@@ -80,15 +80,21 @@ how `spinner.nvim` refresh the Neovim UI:
 - `cmdline`: cmdline
 - `custom`: combine with `on_update_ui` to display spinner anywhere. see[Custom Spinner](#custom-spinner)
 
-Use lua api to control spinner:
+Control spinners via lua api:
 
 ```lua
 local spinner = require("spinner")
+
+-- 1. Setup a spinner with a unique id.
+spinner.config("id", opts)
+
+-- 2. Set up spinner content in the desired location with `render()`.
+local text = spinner.render("id")
+
+-- 3. Control spinner as need.
 spinner.start("id") -- Start a spinner
 spinner.stop("id") -- Stop a spinner
 spinner.pause("id") -- Pause a spinner
-spinner.config("id", opts) -- Configure a spinner
-spinner.render("id") -- Get current spinner frame
 ```
 
 ## Installation
@@ -99,13 +105,18 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 {
   "xieyonn/spinner.nvim",
   config = function()
-    -- **NO** need to call setup() if you are fine with defaults.
     require("spinner").setup()
   end
 }
 ```
 
 ## Setup
+
+**NO** need to call `require("spinner").setup()` if you are fine with defaults.
+
+<details>
+
+<summary>Click to expand</summary>
 
 ```lua
 require("spinner").setup({
@@ -154,18 +165,22 @@ require("spinner").setup({
     -- Highlight group for text, use fg of `Comment` by default.
     hl_group = "Spinner",
   },
+
+  cmdline_spinner = {
+    -- Highlight group for text, use fg of `Comment` by default.
+    hl_group = "Spinner",
+  },
 })
 ```
+
+</details>
 
 # Example
 
 <img src="https://github.com/user-attachments/assets/19fe17a9-5359-478e-8b6f-a0b8a2319229" width="700" />
 
-- Show lsp client name (lua_ls) and lsp progress in statusline.
-- Show a spinners next to cursor for `lsp_hover` (shortcut `K`).
-
-<details>
-   <summary>Example Setup</summary>
+- Display lsp client name (lua_ls) and lsp progress in `statusline`.
+- Display spinner right above cursor when press `K` (lsp_hover)
 
 1. setup a `statusline` spinner with id `lsp_progress` and attach to `LspProgress`
 
@@ -200,6 +215,7 @@ function lsp_progress()
       seen[name] = true
     end
   end
+  -- if no active lsp clients, leave it empty
   if #client_names == 0 then
     return ""
   end
@@ -233,8 +249,6 @@ require("spinner").config("cursor", {
 })
 ```
 
-</details>
-
 # Usage
 
 ## Statusline
@@ -250,7 +264,7 @@ require("spinner").config("my_spinner", {
 2. Set `vim.o.statusline`.
 
 ```lua
--- this function need to be a global function
+-- Need a global function here.
 function my_spinner()
   return require("spinner").render("my_spinner")
 end
@@ -350,14 +364,13 @@ vim.o.winbar = vim.o.winbar .. "%!v:lua.my_spinner()"
 `spinner.nvim` use a float window relative to cursor to displaying spinner.
 create the float window when spinner start/pause, close the float window when stop.
 
-If you want to show multiple `cursor` spinners, be careful with id.
+> If you want to show multiple `cursor` spinners, be careful with id.
 
 Configure a `cursor` spinner with id.
 
 ```lua
 local row, col
-local id = string.format("cursor-spinner-%d-%d", row, col)
-require("spinner").config(id, {
+require("spinner").config("cursor", {
   kind = "cursor",
 
   -- highlight group for text, use fg of `Comment` by default.
@@ -380,12 +393,12 @@ require("spinner").config(id, {
 })
 ```
 
-`row` and `col` means the spinner position relative to cursor.
+`row` and `col` means the position relative to cursor.
 
-- `{ row = -1, col = 1 }` Top-Right
-- `{ row = -1, col = -1 }` Top-Left
-- `{ row = 1, col = 1 }` Down-Right
-- `{ row = 1, col = -1 }` Down-Left
+- `{ row = -1, col = 1 }` Above-Right
+- `{ row = -1, col = -1 }` Above-Left
+- `{ row = 1, col = 1 }` Below-Right
+- `{ row = 1, col = -1 }` Below-Left
 
 ## Extmark
 
@@ -395,12 +408,8 @@ positions.
 Extmarks automatically track positions as the text changes, ensuring the spinner
 stays correctly aligned even when you edit the buffer, like diagnostic messages.
 
-The lifecycle of an `extmark` spinner is bound to the buffer text. This means an
-extmark spinner is generally short-lived; you need to configure the spinner **before**
-you use it.
-
-If you want to show multiple spinners at the same time, be careful with the
-spinner id.
+> If you want to show multiple spinners at the same time, be careful with the
+> spinner id.
 
 Configure an `extmark` spinner with id.
 
@@ -429,6 +438,7 @@ Configure a `cmdline` spinner with id `my_spinner`.
 ```lua
 require("spinner").config("my_spinner", {
   kind = "cmdline"
+  hl_group = "Spinner" -- hl_group for text, optional
 })
 ```
 
@@ -571,7 +581,7 @@ require("spinner").config("my_spinner", {
 ## Highlight
 
 `cursor` / `extmark` / `cmdline` spinners can have a `hl_group` option to change
-text color.
+spinner color.
 
 ```lua
 require("spinner").config("cursor", {
@@ -583,7 +593,7 @@ require("spinner").config("cursor", {
 The hl_group `Spinner` uses fg of `Comment` by default.
 
 ```lua
-vim.api.nvim_set_hl(0, "Spinner", { fg = "xxx" })
+vim.api.nvim_set_hl(0, "Spinner", { fg = "blue" })
 ```
 
 # Commands
@@ -598,7 +608,7 @@ vim.api.nvim_set_hl(0, "Spinner", { fg = "xxx" })
 
 With tab completion for spinner IDs.
 
-> You may never use it, except when testing your configuration.
+> Use it to test your configuration.
 
 # API Reference
 
@@ -614,7 +624,7 @@ With tab completion for spinner IDs.
 ---@field render fun(id: string): string -- Render spinner.
 ---@field setup fun(opts?: spinner.Config) -- Setup global configuration.
 
----@alias spinner.UIScope
+---@alias spinner.UIScope -- Used to combine UI updates.
 ---| "statusline"
 ---| "tabline"
 ---| "cursor"
@@ -765,6 +775,7 @@ local STATUS = {
 ---@field placeholder? string|boolean -- Default placeholder
 ---@field cursor_spinner? spinner.CursorSpinnerConfig -- Default cursor config
 ---@field extmark_spinner? spinner.ExtmarkSpinnerConfig -- Default extmark config
+---@field cmdline_spinner? spinner.CmdlineSpinnerConfig -- Default cmdline config
 ---
 ---@class spinner.CursorSpinnerConfig
 ---@field hl_group? string -- Default highlight group
@@ -775,7 +786,10 @@ local STATUS = {
 ---@field border? string -- Default border style
 ---
 ---@class spinner.ExtmarkSpinnerConfig
----@field hl_group? string
+---@field hl_group? string -- Default highlight group
+---
+---@class spinner.CmdlineSpinnerConfig
+---@field hl_group? string -- Default highlight group
 ```
 
 </details>
