@@ -1,4 +1,4 @@
----@class spinner.CMD
+---@class spinner.cmd
 local M = {}
 local utils = require("spinner.utils")
 
