@@ -34,15 +34,14 @@ function M.progress(id, client_names)
       end
 
       local kind = event.data.params.value.kind --[[@as string]]
-      if not vim.list_contains({ "begin", "end" }, kind) then
-        return
-      end
 
       if kind == "begin" then
         require("spinner").start(id)
       end
 
-      require("spinner").stop(id)
+      if kind == "end" then
+        require("spinner").stop(id)
+      end
     end,
   })
 end
