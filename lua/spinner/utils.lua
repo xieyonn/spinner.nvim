@@ -105,8 +105,9 @@ function M.create_comp(fn)
 end
 
 ---Deduplicate a list while preserving order
----@param list (string|integer)[]
----@return (string|integer)[] result
+---@generic T: Comparable
+---@param list T[]
+---@return T[] result
 function M.deduplicate_list(list)
   local seen = {} ---@type table<string|integer, boolean>
   local result = {}
