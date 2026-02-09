@@ -32,9 +32,9 @@ function M.open()
     width = width,
     height = height,
     style = "minimal",
-    focusable = false,
+    focusable = true,
     border = "rounded",
-    noautocmd = true,
+    noautocmd = false,
   })
 
   local lines = {}
