@@ -1,4 +1,4 @@
----@class spinner.Cfg
+---@class spinner.config
 local M = {}
 
 ---@class spinner.Config
