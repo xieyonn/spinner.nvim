@@ -10,7 +10,7 @@ local function qtext(quotestr, P, C)
   return quote * C(((1 - P(quote)) + escaped_quote) ^ 0) * quote
 end
 
----@class spinner.Utils
+---@class spinner.utils
 local M = {}
 
 M.AUGROUP = vim.api.nvim_create_augroup("spinner", { clear = true })
