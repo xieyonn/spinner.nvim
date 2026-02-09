@@ -4,7 +4,7 @@ local utils = require("spinner.utils")
 
 -- Completion function for Spinner command
 ---@param engine spinner.Engine
----@return (fun(ArgLead: string, CmdLine: string, CursorPos: integer): comps: string[]|nil) comp_fun
+---@return spinner.VimCompFn comp_fun
 local function spinner_completion(engine)
   return utils.create_comp(function(ctx)
     if ctx.prev == "Spinner" then
