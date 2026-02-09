@@ -102,7 +102,7 @@ local function validate_opts(opts)
         return true
       end
       return type(x) == "string"
-        and vim.tbl_contains({
+        and vim.list_contains({
           "statusline",
           "tabline",
           "winbar",
@@ -202,6 +202,7 @@ end
 
 ---Merge Opts
 ---@param opts? spinner.Opts
+---@return spinner.Opts opts
 local function merge_opts(opts)
   if opts then
     validate_opts(opts)
@@ -223,7 +224,7 @@ local function merge_opts(opts)
   elseif placeholder == true then
     -- use a empty string with same length of frames as placeholder
     local first_frame = opts.pattern.frames and opts.pattern.frames[1] or ""
-    opts.placeholder = string.rep(" ", vim.fn.strdisplaywidth(first_frame))
+    opts.placeholder = (" "):rep(vim.fn.strdisplaywidth(first_frame))
   end
 
   opts.ttl_ms = vim.F.if_nil(opts.ttl_ms, config.global.ttl_ms)
@@ -272,10 +273,10 @@ function M:render()
   end
 
   if text ~= "" and self.opts.kind == "cmdline" then
-    text = "{{SPINNER_HIGHLIGHT}}" .. text .. "{{END_HIGHLIGHT}}"
+    text = ("{{SPINNER_HIGHLIGHT}}%s{{END_HIGHLIGHT}}"):format(text)
   end
 
-  if self.opts.fmt then
+  if self.opts.fmt and vim.is_callable(self.opts.fmt) then
     text = self.opts.fmt({
       text = text,
       status = self.status,
@@ -300,7 +301,7 @@ function M:start()
       and now_ms - self.start_time < self.opts.initial_delay_ms
     then
       -- call start() when PAUSED, but already started, just wait for delay.
-      return false, nil
+      return false
     end
 
     -- PAUSED -> RUNNING
@@ -314,7 +315,7 @@ function M:start()
 
   -- prevent start twice
   if self.started then
-    return false, nil
+    return false
   end
   self.started = true
 
@@ -389,7 +390,7 @@ end
 ---@return integer|nil
 function M:step(now_ms)
   if STATUS.STOPPED == self.status or STATUS.PAUSED == self.status then
-    return false, nil
+    return false
   end
 
   -- check ttl
@@ -397,7 +398,7 @@ function M:step(now_ms)
     local was_fully_stopped, needs_ui_refresh = self:stop()
     if was_fully_stopped then
       -- Spinner has fully stopped due to TTL expiration
-      return needs_ui_refresh, nil
+      return needs_ui_refresh
     end
   end
 

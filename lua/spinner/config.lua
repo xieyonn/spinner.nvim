@@ -1,3 +1,4 @@
+---@class spinner.Cfg
 local M = {}
 
 ---@class spinner.Config
@@ -77,8 +78,7 @@ local default_config = {
   },
 }
 
----@type spinner.Config
-M.global = default_config
+M.global = default_config ---@type spinner.Config
 
 ---Validate config options using vim.validate
 ---@param opts? spinner.Config
@@ -128,27 +128,26 @@ local function validate_config(opts)
     "placeholder must be a string or boolean"
   )
 
-  local cs = opts.cursor_spinner
-  if cs then
+  if opts.cursor_spinner then
     vim.validate(
       "cs.hl_group",
-      cs.hl_group,
+      opts.cursor_spinner.hl_group,
       { "string", "nil" },
       true,
       "hl_group must be a string"
     )
 
-    vim.validate("cs.winblend", cs.winblend, function(x)
+    vim.validate("cs.winblend", opts.cursor_spinner.winblend, function(x)
       return x == nil or (type(x) == "number" and x >= 0 and x <= 100)
     end, true, "winblend must be a number between 0 and 100")
 
-    vim.validate("cs.zindex", cs.zindex, function(x)
+    vim.validate("cs.zindex", opts.cursor_spinner.zindex, function(x)
       return x == nil or (type(x) == "number" and x >= 0)
     end, true, "zindex must be a number >= 0")
 
     vim.validate(
       "cs.row",
-      cs.row,
+      opts.cursor_spinner.row,
       { "number", "nil" },
       true,
       "row must be a number"
@@ -156,7 +155,7 @@ local function validate_config(opts)
 
     vim.validate(
       "cs.col",
-      cs.col,
+      opts.cursor_spinner.col,
       { "number", "nil" },
       true,
       "col must be a number"
@@ -164,18 +163,17 @@ local function validate_config(opts)
 
     vim.validate(
       "cs.border",
-      cs.border,
+      opts.cursor_spinner.border,
       { "string", "nil" },
       true,
       "border must be a string"
     )
   end
 
-  local es = opts.extmark_spinner
-  if es then
+  if opts.extmark_spinner then
     vim.validate(
       "es.hl_group",
-      es.hl_group,
+      opts.extmark_spinner.hl_group,
       { "string", "nil" },
       true,
       "hl_group must be a string"
@@ -192,8 +190,7 @@ function M.setup(opts)
   -- Get NormalFloat attributes and only apply foreground color
   local normal_float_hl =
     vim.api.nvim_get_hl(0, { name = "Comment", link = false })
-  local spinner_hl = { fg = normal_float_hl.fg, default = true }
-  vim.api.nvim_set_hl(0, "Spinner", spinner_hl)
+  vim.api.nvim_set_hl(0, "Spinner", { fg = normal_float_hl.fg, default = true })
 end
 
 return M

@@ -6,8 +6,8 @@ local M = {}
 
 ---Check client_id is what we want
 ---@param client_name_set spinner.Set
----@param client_id number client id
----@return boolean
+---@param client_id integer client id
+---@return boolean wants
 local function want_client(client_name_set, client_id)
   local client = vim.lsp.get_client_by_id(client_id)
   local client_name = client and client.name or nil
@@ -33,13 +33,16 @@ function M.progress(id, client_names)
         return
       end
 
-      local kind = event.data.params.value.kind
+      local kind = event.data.params.value.kind --[[@as string]]
+      if not vim.list_contains({ "begin", "end" }, kind) then
+        return
+      end
+
       if kind == "begin" then
         require("spinner").start(id)
       end
-      if kind == "end" then
-        require("spinner").stop(id)
-      end
+
+      require("spinner").stop(id)
     end,
   })
 end
@@ -68,9 +71,9 @@ function M.request(id, methods, client_names)
 
       if request.type == "pending" then
         require("spinner").start(id)
-      elseif request.type == "cancel" then
-        require("spinner").stop(id)
-      elseif request.type == "complete" then
+        return
+      end
+      if vim.list_contains({ "cancel", "complete" }, request.type) then
         require("spinner").stop(id)
       end
     end,

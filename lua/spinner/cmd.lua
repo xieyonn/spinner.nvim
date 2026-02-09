@@ -1,28 +1,29 @@
+---@class spinner.CMD
 local M = {}
 local utils = require("spinner.utils")
 
 -- Completion function for Spinner command
+---@param engine spinner.Engine
+---@return (fun(ArgLead: string, CmdLine: string, CursorPos: integer): comps: string[]|nil) comp_fun
 local function spinner_completion(engine)
   return utils.create_comp(function(ctx)
     if ctx.prev == "Spinner" then
       return { "start", "stop", "pause" }
     end
 
-    local ids = {}
+    local ids = {} ---@type string[]
     for id, _ in pairs(engine.state_map) do
       if rawget(engine.state_map, id) then
         table.insert(ids, id)
       end
     end
 
-    local entered_ids = {}
-    local words = ctx.words
-    for i = 3, #words do
-      local id = words[i]
-      entered_ids[id] = true
+    local entered_ids = {} ---@type table<string, boolean>
+    for i = 3, #ctx.words do
+      entered_ids[ctx.words[i]] = true
     end
 
-    local available_ids = {}
+    local available_ids = {} ---@type string[]
     for _, id in ipairs(ids) do
       if not entered_ids[id] then
         table.insert(available_ids, id)
@@ -33,9 +34,10 @@ local function spinner_completion(engine)
   end)
 end
 
+---@param engine spinner.Engine
 local function spinner_cmd(engine)
   vim.api.nvim_create_user_command("Spinner", function(opts)
-    if #opts.fargs == 0 then
+    if vim.tbl_isempty(opts.fargs) then
       vim.notify(
         "[spinner.nvim]: Missing subcommand. Use one of: start, stop, pause",
         vim.log.levels.WARN
@@ -52,26 +54,26 @@ local function spinner_cmd(engine)
     for _, spinner_id in ipairs(unique_spinner_ids) do
       if not rawget(engine.state_map, spinner_id) then
         vim.notify(
-          string.format("[spinner.nvim]: spinner %s not setup yet", spinner_id),
+          ("[spinner.nvim]: spinner %s not setup yet"):format(spinner_id),
           vim.log.levels.WARN
         )
         -- Continue to next spinner instead of returning
-      else
-        if subcmd == "start" then
-          engine:start(spinner_id)
-        elseif subcmd == "stop" then
-          engine:stop(spinner_id, true)
-        elseif subcmd == "pause" then
-          engine:pause(spinner_id)
-        else
-          vim.notify(
-            "[spinner.nvim]: Unknown subcommand '"
-              .. subcmd
-              .. "'. Use one of: start, stop, pause",
-            vim.log.levels.WARN
-          )
-          return
-        end
+      elseif not vim.list_contains({ "start", "stop", "pause" }, subcmd) then
+        vim.notify(
+          "[spinner.nvim]: Unknown subcommand '"
+            .. subcmd
+            .. "'. Use one of: start, stop, pause",
+          vim.log.levels.WARN
+        )
+        return
+      end
+
+      if subcmd == "start" then
+        engine:start(spinner_id)
+      elseif subcmd == "stop" then
+        engine:stop(spinner_id, true)
+      elseif subcmd == "pause" then
+        engine:pause(spinner_id)
       end
     end
   end, {
@@ -82,6 +84,7 @@ local function spinner_cmd(engine)
   })
 end
 
+---@param engine spinner.Engine
 function M.setup(engine)
   spinner_cmd(engine)
 end

@@ -1,19 +1,17 @@
 local has_lualine, lualine = pcall(require, "lualine")
 
-if has_lualine and lualine then
-  return function()
+return function()
+  if has_lualine and lualine then
     lualine.refresh({
       place = { "tabline" },
     })
+    return
   end
-end
 
-if vim.api.nvim__redraw then
-  return function()
+  if vim.api.nvim__redraw then
     vim.api.nvim__redraw({ tabeline = true })
+    return
   end
-end
 
-return function()
-  vim.cmd("redrawtabline")
+  vim.cmd.redrawtabline()
 end
