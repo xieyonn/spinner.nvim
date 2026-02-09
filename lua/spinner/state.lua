@@ -256,7 +256,7 @@ local function merge_opts(opts)
 end
 
 ---Render spinner as text
----@return string
+---@return string text
 function M:render()
   local text = ""
 
@@ -301,7 +301,7 @@ function M:start()
       and now_ms - self.start_time < self.opts.initial_delay_ms
     then
       -- call start() when PAUSED, but already started, just wait for delay.
-      return false
+      return false, nil
     end
 
     -- PAUSED -> RUNNING
@@ -315,7 +315,7 @@ function M:start()
 
   -- prevent start twice
   if self.started then
-    return false
+    return false, nil
   end
   self.started = true
 
@@ -390,7 +390,7 @@ end
 ---@return integer|nil
 function M:step(now_ms)
   if STATUS.STOPPED == self.status or STATUS.PAUSED == self.status then
-    return false
+    return false, nil
   end
 
   -- check ttl
@@ -398,7 +398,7 @@ function M:step(now_ms)
     local was_fully_stopped, needs_ui_refresh = self:stop()
     if was_fully_stopped then
       -- Spinner has fully stopped due to TTL expiration
-      return needs_ui_refresh
+      return needs_ui_refresh, nil
     end
   end
 
