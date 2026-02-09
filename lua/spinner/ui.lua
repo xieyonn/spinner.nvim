@@ -5,7 +5,7 @@ local statusline = require("spinner.ui.statusline")
 local tabline = require("spinner.ui.tabline")
 local winbar = require("spinner.ui.winbar")
 
----@class spinner.UI
+---@class spinner.ui
 local M = {}
 
 ---@alias spinner.UIUpdater function
