@@ -16,7 +16,7 @@ Extensible spinner framework for Neovim plugins and UI.
     - Any place you can render a text.
 - **LSP integration**: show spinners for `LspProgress` and `LspRequest`.
 - **Extensible API**: start/stop/pause a spinner.
-- **Configurable spinner patterns**: Built-in presets with 60+ [patterns](https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua)
+- **Configurable spinner patterns**: Built-in presets with 70+ [patterns](https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua)
 
 <div>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -110,6 +110,8 @@ Type in command line:
 ```vim
 = require("spinner.demo").open()
 ```
+
+Will open a window displaying all built-in spinners.
 
 ## Setup
 

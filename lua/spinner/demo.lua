@@ -25,7 +25,7 @@ function M.open()
   local height = math.floor(vim.o.lines * 0.6)
   local row = math.floor((vim.o.lines - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)
-  vim.api.nvim_open_win(bufnr, true, {
+  local win = vim.api.nvim_open_win(bufnr, true, {
     relative = "editor",
     row = row,
     col = col,
@@ -36,6 +36,10 @@ function M.open()
     border = "rounded",
     noautocmd = false,
   })
+  if win == 0 then
+    vim.notify("[spinner.nvim] fail to open demo window", vim.log.levels.ERROR)
+    return
+  end
 
   local lines = {}
   local i = 0
@@ -62,17 +66,24 @@ function M.open()
 
   for _, key in ipairs({ "q", "<Esc>" }) do
     vim.keymap.set("n", key, function()
-      for _, pattern in ipairs(patterns) do
-        require("spinner").stop(pattern)
+      if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
       end
-
-      vim.cmd.close()
     end, {
       buffer = bufnr,
       nowait = true,
       silent = true,
     })
   end
+
+  vim.api.nvim_create_autocmd("BufWipeout", {
+    buffer = bufnr,
+    callback = function()
+      for _, pattern in ipairs(patterns) do
+        require("spinner").stop(pattern)
+      end
+    end,
+  })
 end
 
 return M
