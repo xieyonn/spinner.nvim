@@ -15,5 +15,5 @@ if vim.api.nvim__redraw then
 end
 
 return function()
-  vim.cmd("redrawstatus")
+  vim.cmd.redrawstatus()
 end

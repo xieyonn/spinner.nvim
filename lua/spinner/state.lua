@@ -102,7 +102,7 @@ local function validate_opts(opts)
         return true
       end
       return type(x) == "string"
-        and vim.tbl_contains({
+        and vim.list_contains({
           "statusline",
           "tabline",
           "winbar",
@@ -202,6 +202,7 @@ end
 
 ---Merge Opts
 ---@param opts? spinner.Opts
+---@return spinner.Opts opts
 local function merge_opts(opts)
   if opts then
     validate_opts(opts)
@@ -223,7 +224,7 @@ local function merge_opts(opts)
   elseif placeholder == true then
     -- use a empty string with same length of frames as placeholder
     local first_frame = opts.pattern.frames and opts.pattern.frames[1] or ""
-    opts.placeholder = string.rep(" ", vim.fn.strdisplaywidth(first_frame))
+    opts.placeholder = (" "):rep(vim.fn.strdisplaywidth(first_frame))
   end
 
   opts.ttl_ms = vim.F.if_nil(opts.ttl_ms, config.global.ttl_ms)
@@ -255,7 +256,7 @@ local function merge_opts(opts)
 end
 
 ---Render spinner as text
----@return string
+---@return string text
 function M:render()
   local text = ""
 
@@ -272,10 +273,10 @@ function M:render()
   end
 
   if text ~= "" and self.opts.kind == "cmdline" then
-    text = "{{SPINNER_HIGHLIGHT}}" .. text .. "{{END_HIGHLIGHT}}"
+    text = ("{{SPINNER_HIGHLIGHT}}%s{{END_HIGHLIGHT}}"):format(text)
   end
 
-  if self.opts.fmt then
+  if self.opts.fmt and vim.is_callable(self.opts.fmt) then
     text = self.opts.fmt({
       text = text,
       status = self.status,

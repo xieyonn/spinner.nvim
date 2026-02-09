@@ -3,8 +3,9 @@ local STATUS = require("spinner.status")
 local spinner_ns = vim.api.nvim_create_namespace("spinner.nvim")
 
 ---@param state spinner.State
+---@return function
 return function(state)
-  local extmark_id = nil
+  local extmark_id = nil ---@type integer|nil
 
   return function()
     local opts = state.opts

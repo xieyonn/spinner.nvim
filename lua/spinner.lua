@@ -42,7 +42,7 @@ end
 
 ---Render spinner.
 ---@param id string spinner id.
----@return string
+---@return string render
 function M.render(id)
   return engine:render(id)
 end

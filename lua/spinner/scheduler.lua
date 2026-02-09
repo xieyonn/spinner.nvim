@@ -17,13 +17,18 @@ local IDLE_RELEASE_MS = 10000
 local M = {}
 M.__index = M
 
+---@return spinner.Scheduler scheduler
 function M.new()
   return setmetatable({
     timer = nil,
-    tasks = heap.new(function(a, b)
-      -- Use strict less-than to maintain FIFO order for tasks with same time
-      return a.at < b.at
-    end),
+    tasks = heap.new(
+      ---@param a spinner.SchedulerTask
+      ---@param b spinner.SchedulerTask
+      function(a, b)
+        -- Use strict less-than to maintain FIFO order for tasks with same time
+        return a.at < b.at
+      end
+    ),
   }, M)
 end
 
@@ -68,7 +73,7 @@ function M:_start_timer(delay)
   end
 
   local ok, timer = pcall(uv.new_timer)
-  if not ok or not timer then
+  if not (ok and timer) then
     vim.notify("[spinner.nvim]: failed to create uv timer", vim.log.levels.WARN)
     return
   end
@@ -93,8 +98,7 @@ function M:_schedule_next()
   end
 
   local task = self.tasks:peek() --[[@as spinner.SchedulerTask]]
-  local delay = math.max(SCHEDULE_WINDOW_MS, task.at - utils.now_ms())
-  self:_start_timer(delay)
+  self:_start_timer(math.max(SCHEDULE_WINDOW_MS, task.at - utils.now_ms()))
 end
 
 ---Executes all tasks ready within SCHEDULE_WINDOW_MS, If a task returns a
@@ -102,16 +106,16 @@ end
 ---@private
 function M:_tick()
   local now = utils.now_ms()
-  local ready = {}
+  local ready = {} ---@type spinner.SchedulerTask[]
 
   while not self.tasks:is_empty() do
     local task = self.tasks:peek() --[[@as spinner.SchedulerTask]]
-    if task.at - now <= SCHEDULE_WINDOW_MS then
-      table.insert(ready, task)
-      self.tasks:pop()
-    else
+    if task.at - now > SCHEDULE_WINDOW_MS then
       break
     end
+
+    table.insert(ready, task)
+    self.tasks:pop()
   end
 
   for _, task in ipairs(ready) do
@@ -137,10 +141,12 @@ function M:schedule(job, at)
   self.tasks:push(task)
 
   local next_task = self.tasks:peek()
-  if next_task == task then
-    -- cut in - this task is now the earliest in the heap
-    self:_schedule_next()
+  if next_task ~= task then
+    return
   end
+
+  -- cut in - this task is now the earliest in the heap
+  self:_schedule_next()
 end
 
 return M

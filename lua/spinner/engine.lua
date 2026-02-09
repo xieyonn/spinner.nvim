@@ -9,7 +9,7 @@ local M = {}
 M.__index = M
 
 ---@param scheduler spinner.Scheduler
----@return spinner.Engine
+---@return spinner.Engine engine
 function M.new(scheduler)
   local self = setmetatable({
     scheduler = scheduler,
@@ -49,7 +49,7 @@ function M:update_ui(state)
       local ok, err = pcall(updater)
       if not ok then
         vim.notify(
-          string.format("[spinner.nvim]: fail to refresh ui: %s", err),
+          ("[spinner.nvim]: fail to refresh ui: %s"):format(err),
           vim.log.levels.INFO
         )
       end

@@ -1,29 +1,29 @@
 ---@alias Comparable string|number|boolean|table|function|userdata
 
 ---@class spinner.Set
----@field set { [Comparable]: boolean }
+---@field set table<Comparable, boolean>
 ---@field n integer
-local M = {
-  set = {},
-  n = 0,
-}
+local M = {}
 
+M.set = {}
+M.n = 0
 M.__index = M
 
 ---New Set.
 ---
----@param items Comparable[] | nil
----@return spinner.Set
+---@param items Comparable[]|nil
+---@return spinner.Set set
 function M.new(items)
-  local set = {}
-  local n = 0
+  if not items then
+    return setmetatable({ set = {}, n = 0 }, M)
+  end
 
-  if items then
-    for _, item in ipairs(items) do
-      if not set[item] then
-        set[item] = true
-        n = n + 1
-      end
+  local set, n = {}, 0 ---@type table<Comparable, boolean>, integer
+
+  for _, item in ipairs(items) do
+    if not set[item] then
+      set[item] = true
+      n = n + 1
     end
   end
 
@@ -33,7 +33,8 @@ end
 ---Return boolean value whether an element exist.
 ---
 ---@param item Comparable|nil
----@return boolean
+---@return boolean has
+---@nodiscard
 function M:has(item)
   if item == nil then
     return false
@@ -87,7 +88,8 @@ function M:for_each(f)
 end
 
 ---Check empty
----@return boolean
+---@return boolean empty
+---@nodiscard
 function M:is_empty()
   return self.n == 0
 end

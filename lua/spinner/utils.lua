@@ -1,9 +1,21 @@
 local uv = vim.uv or vim.loop
 
+---@param quotestr string
+---@param P fun(value: boolean|string|integer|function|table|vim.lpeg.Pattern): vim.lpeg.Pattern
+---@param C fun(patt: boolean|string|integer|function|table|vim.lpeg.Pattern): vim.lpeg.Pattern
+---@return vim.lpeg.Pattern pattern
+local function qtext(quotestr, P, C)
+  local quote = P(quotestr)
+  local escaped_quote = P("\\") * quote
+  return quote * C(((1 - P(quote)) + escaped_quote) ^ 0) * quote
+end
+
+---@class spinner.utils
 local M = {}
 
 M.AUGROUP = vim.api.nvim_create_augroup("spinner", { clear = true })
 
+---@return integer now
 function M.now_ms()
   return math.floor(uv.hrtime() / 1e6)
 end
@@ -30,31 +42,22 @@ end
 ---
 --- @see nvim-dap https://github.com/mfussenegger/nvim-dap
 --- @param str string
---- @return string[]
+--- @return string[] splitted
 function M.splitstr(str)
-  local lpeg = vim.lpeg
-  local P, S, C = lpeg.P, lpeg.S, lpeg.C
-
-  ---@param quotestr string
-  ---@return vim.lpeg.Pattern
-  local function qtext(quotestr)
-    local quote = P(quotestr)
-    local escaped_quote = P("\\") * quote
-    return quote * C(((1 - P(quote)) + escaped_quote) ^ 0) * quote
-  end
   str = str:match("^%s*(.*%S)")
   if not str or str == "" then
     return {}
   end
 
+  local P, S, C = vim.lpeg.P, vim.lpeg.S, vim.lpeg.C
   local space = S(" \t\n\r") ^ 1
   local unquoted = C((1 - space) ^ 0)
-  local element = qtext('"') + qtext("'") + unquoted
-  local p = lpeg.Ct(element * (space * element) ^ 0)
-  return lpeg.match(p, str)
+  local element = qtext('"', P, C) + qtext("'", P, C) + unquoted
+  local p = vim.lpeg.Ct(element * (space * element) ^ 0)
+  return vim.lpeg.match(p, str)
 end
 
----@alias spinner.VimCompFn fun(ArgLead: string, CmdLine: string, CursorPos: number): string[] | nil
+---@alias spinner.VimCompFn fun(ArgLead: string, CmdLine: string, CursorPos: integer): comps: string[]|nil
 ---
 ---@class spinner.CompContext
 ---@field words string[]
@@ -62,12 +65,12 @@ end
 ---@field prev string
 ---@field index number
 ---
----@alias spinner.CompFn fun(ctx: spinner.CompContext): string[] | nil
+---@alias spinner.CompFn fun(ctx: spinner.CompContext): items: string[]|nil
 
 ---Build vim complete function with a bash-like complete function {fn}, which
 ---accept a `spinner.CompContext` object as completion context.
 ---@param fn spinner.CompFn
----@return spinner.VimCompFn
+---@return spinner.VimCompFn comp_fun
 function M.create_comp(fn)
   return function(_, cmdline, cursorpos)
     local ctx = {}
@@ -102,10 +105,10 @@ function M.create_comp(fn)
 end
 
 ---Deduplicate a list while preserving order
----@param list table
----@return table
+---@param list (string|integer)[]
+---@return (string|integer)[] result
 function M.deduplicate_list(list)
-  local seen = {}
+  local seen = {} ---@type table<string|integer, boolean>
   local result = {}
   for _, item in ipairs(list) do
     if not seen[item] then
