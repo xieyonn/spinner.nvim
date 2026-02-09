@@ -46,19 +46,12 @@ Extensible spinner framework for Neovim plugins and UI.
 ==============================================================================
 2. Features                                                 *spinner-features*
 
-- **Multiple UI locations**: Supports `statusline`, `tabline`, `winbar`, `cursor`,
-    `extmark`, and `cmdline`.
-- **Out-of-the-box LSP integration**: Displays spinner for `LspProgress` and `LspRequest`
-- **High-performance scheduling**: Uses a custom scheduler with `uv.timer` and heap-based
-    task management for optimal performance and minimal resource usage.
-- **Batch UI updates**: Combines UI updates by scope to minimize redraw operations
-    and improve performance.
-- **Drift compensation**: Adjusts timing to compensate for timer drift and maintain
-    consistent animation speeds.
-- **Extensible API**: Simple interface for controlling spinners programmatically
-    in your own plugins and configurations.
+- **Multiple UI locations**:
+    - Pre-defined `statusline`, `tabline`, `winbar`, `cursor`, `extmark`, and `cmdline`
+    - Any place you can render a text.
+- **LSP integration**: show spinners for `LspProgress` and `LspRequest`.
+- **Extensible API**: start/stop/pause a spinner.
 - **Configurable spinner patterns**: Built-in presets with 60+ patterns <https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua>
-    for various use cases.
 
 
 
@@ -78,22 +71,22 @@ how `spinner.nvim` refresh the Neovim UI:
   ---------------------------------------------------------------------------
   kind         refresh method
   ------------ --------------------------------------------------------------
-  statusline   vim.cmd("redrawstatus) or
-               vim.api.nvim__redraw({ statusline = true})
+  statusline   vim.cmd(“redrawstatus) or vim.api.nvim__redraw({ statusline =
+               true})
 
-  tabline      vim.cmd("redrawtabline) or
-               vim.api.nvim__redraw({ tabline = true})
+  tabline      vim.cmd(“redrawtabline) or vim.api.nvim__redraw({ tabline =
+               true})
 
-  winbar       vim.cmd("redrawstatus) or
-               vim.api.nvim__redraw({ winbar = true})
+  winbar       vim.cmd(“redrawstatus) or vim.api.nvim__redraw({ winbar =
+               true})
 
   extmark      vim.api.nvim_buf_set_extmarks()
 
   cursor       vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines()
 
-  cmdline      vim.cmd("echo 'text'")
+  cmdline      vim.cmd(“echo ‘text’”)
 
-  custom       user option on_update_ui(event)
+  custom       with a custom function to refresh UI. see Custom Spinner
   ---------------------------------------------------------------------------
 Control spinners via lua api:
 
