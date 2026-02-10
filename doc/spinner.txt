@@ -17,20 +17,19 @@ Table of Contents                                  *spinner-table-of-contents*
   - Cursor                                                    |spinner-cursor|
   - Extmark                                                  |spinner-extmark|
   - Cmdline                                                  |spinner-cmdline|
-  - Custom Spinner                                    |spinner-custom-spinner|
-6. Options                                                   |spinner-options|
+6. Extend                                                     |spinner-extend|
+7. Options                                                   |spinner-options|
   - Lsp Integration                                  |spinner-lsp-integration|
   - Pattern                                                  |spinner-pattern|
   - TTL                                                          |spinner-ttl|
   - Initial Delay                                      |spinner-initial-delay|
   - Placeholder                                          |spinner-placeholder|
   - Formatting                                            |spinner-formatting|
-  - Highlight                                              |spinner-highlight|
-7. Commands                                                 |spinner-commands|
-8. API Reference                                       |spinner-api-reference|
-9. Contributing                                         |spinner-contributing|
-10. Thanks                                                    |spinner-thanks|
-11. Links                                                      |spinner-links|
+8. Commands                                                 |spinner-commands|
+9. API Reference                                       |spinner-api-reference|
+10. Contributing                                        |spinner-contributing|
+11. Thanks                                                    |spinner-thanks|
+12. Links                                                      |spinner-links|
 
 ==============================================================================
 1. spinner.nvim                                         *spinner-spinner.nvim*
@@ -87,7 +86,7 @@ how `spinner.nvim` refresh the Neovim UI:
 
   cmdline      vim.cmd(“echo ‘text’”)
 
-  custom       with a custom function to refresh UI. see Custom Spinner
+  custom       you tell spinner.nvim how, see Extend
   ---------------------------------------------------------------------------
 Control spinners via lua api:
 
@@ -497,15 +496,13 @@ Configure a `cmdline` spinner with id `my_spinner`.
 <
 
 
-CUSTOM SPINNER                                        *spinner-custom-spinner*
+==============================================================================
+6. Extend                                                     *spinner-extend*
+
+`spinner.nvim` decides when to refresh the UI, and you decide where and how to
+do it.
 
 Use option `on_update_ui` to implement a `custom` spinner.
-
-`spinner.nvim` only manages the spinner state transitions, you control how and
-where to render the spinner. eg:
-
-- in a prompt buffer.
-- on the border of an input window.
 
 >lua
     require("spinner").config("my_spinner", {
@@ -520,6 +517,9 @@ where to render the spinner. eg:
     })
 <
 
+`on_update_ui` is called when the UI needs to be refreshed, function signature
+see |spinner-api-reference|
+
 `ui_scope` defines the scope for batching UI updates. Spinners with the same
 `ui_scope` will have their UI updates combined to improve performance. For
 example:
@@ -528,11 +528,9 @@ example:
 - All `tabline` spinners share the `tabline` scope and update together.
 - Custom spinners with the same `ui_scope` will update together.
 
-`on_update_ui` function signature see |spinner-api-reference|
-
 
 ==============================================================================
-6. Options                                                   *spinner-options*
+7. Options                                                   *spinner-options*
 
 
 LSP INTEGRATION                                      *spinner-lsp-integration*
@@ -646,27 +644,8 @@ receives the current text and status and returns the formatted string:
 <
 
 
-HIGHLIGHT                                                  *spinner-highlight*
-
-`cursor` / `extmark` / `cmdline` spinners can have a `hl_group` option to
-change spinner color.
-
->lua
-    require("spinner").config("cursor", {
-      kind = "cursor",
-      hl_group = "Spinner",
-    })
-<
-
-The hl_group `Spinner` uses fg of `Comment` by default.
-
->lua
-    vim.api.nvim_set_hl(0, "Spinner", { fg = "blue" })
-<
-
-
 ==============================================================================
-7. Commands                                                 *spinner-commands*
+8. Commands                                                 *spinner-commands*
 
 `spinner.nvim` provides a command `Spinner`:
 
@@ -682,7 +661,7 @@ With tab completion for spinner IDs.
   Use it to test your configuration.
 
 ==============================================================================
-8. API Reference                                       *spinner-api-reference*
+9. API Reference                                       *spinner-api-reference*
 
 Click to expand ~
 
@@ -867,21 +846,21 @@ Click to expand ~
 
 
 ==============================================================================
-9. Contributing                                         *spinner-contributing*
+10. Contributing                                        *spinner-contributing*
 
 Please see CONTRIBUTING.md <CONTRIBUTING.md> for detailed guidelines on how to
 contribute to this project.
 
 
 ==============================================================================
-10. Thanks                                                    *spinner-thanks*
+11. Thanks                                                    *spinner-thanks*
 
 - cli-spinners <https://github.com/sindresorhus/cli-spinners> Adopted a lot of spinner patterns from there.
 - panvimdoc <https://github.com/kdheepak/panvimdoc> Use this plugin to generate vim docs.
 - nvim-dap <https://github.com/mfussenegger/nvim-dap> Borrow `splitstr` function used in cmdline command completion.
 
 ==============================================================================
-11. Links                                                      *spinner-links*
+12. Links                                                      *spinner-links*
 
 1. *coverage*: https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main&logo=codecov
 2. *release*: https://img.shields.io/github/v/release/xieyonn/spinner.nvim

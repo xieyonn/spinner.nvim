@@ -34,7 +34,7 @@ Extensible spinner framework for Neovim plugins and UI.
     - [Cursor](#cursor)
     - [Extmark](#extmark)
     - [Cmdline](#cmdline)
-    - [Custom Spinner](#custom-spinner)
+- [Extend](#extend)
 - [Options](#options)
     - [Lsp Integration](#lsp-integration)
     - [Pattern](#pattern)
@@ -42,7 +42,6 @@ Extensible spinner framework for Neovim plugins and UI.
     - [Initial Delay](#initial-delay)
     - [Placeholder](#placeholder)
     - [Formatting](#formatting)
-    - [Highlight](#highlight)
 - [Commands](#commands)
 - [API Reference](#api-reference)
 - [Contributing](#contributing)
@@ -63,15 +62,15 @@ individual spinner states.
 Each spinner can have a optional option `kind`. Different kind values indicate
 how `spinner.nvim` refresh the Neovim UI:
 
-| kind       | refresh method                                                              |
-| ---------- | --------------------------------------------------------------------------- |
-| statusline | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ statusline = true})      |
-| tabline    | vim.cmd("redrawtabline) or vim.api.nvim\_\_redraw({ tabline = true})        |
-| winbar     | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ winbar = true})          |
-| extmark    | vim.api.nvim_buf_set_extmarks()                                             |
-| cursor     | vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines()                      |
-| cmdline    | vim.cmd("echo 'text'")                                                      |
-| custom     | with a custom function to refresh UI. see [Custom Spinner](#custom-spinner) |
+| kind       | refresh method                                                         |
+| ---------- | ---------------------------------------------------------------------- |
+| statusline | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ statusline = true}) |
+| tabline    | vim.cmd("redrawtabline) or vim.api.nvim\_\_redraw({ tabline = true})   |
+| winbar     | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ winbar = true})     |
+| extmark    | vim.api.nvim_buf_set_extmarks()                                        |
+| cursor     | vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines()                 |
+| cmdline    | vim.cmd("echo 'text'")                                                 |
+| custom     | you tell spinner.nvim how, see [Extend](#extend)                       |
 
 Control spinners via lua api:
 
@@ -458,15 +457,11 @@ require("spinner").config("my_spinner", {
 })
 ```
 
-## Custom Spinner
+# Extend
+
+`spinner.nvim` decides when to refresh the UI, and you decide where and how to do it.
 
 Use option `on_update_ui` to implement a `custom` spinner.
-
-`spinner.nvim` only manages the spinner state transitions, you control how and
-where to render the spinner. eg:
-
-- in a prompt buffer.
-- on the border of an input window.
 
 ```lua
 require("spinner").config("my_spinner", {
@@ -481,14 +476,14 @@ require("spinner").config("my_spinner", {
 })
 ```
 
+`on_update_ui` is called when the UI needs to be refreshed, function signature see [API Reference](#api-reference)
+
 `ui_scope` defines the scope for batching UI updates. Spinners with the same `ui_scope`
 will have their UI updates combined to improve performance. For example:
 
 - All `statusline` spinners share the `statusline` scope and update together.
 - All `tabline` spinners share the `tabline` scope and update together.
 - Custom spinners with the same `ui_scope` will update together.
-
-`on_update_ui` function signature see [API Reference](#api-reference)
 
 # Options
 
@@ -592,24 +587,6 @@ require("spinner").config("my_spinner", {
     return "[" .. text .. "]"
   end
 })
-```
-
-## Highlight
-
-`cursor` / `extmark` / `cmdline` spinners can have a `hl_group` option to change
-spinner color.
-
-```lua
-require("spinner").config("cursor", {
-  kind = "cursor",
-  hl_group = "Spinner",
-})
-```
-
-The hl_group `Spinner` uses fg of `Comment` by default.
-
-```lua
-vim.api.nvim_set_hl(0, "Spinner", { fg = "blue" })
 ```
 
 # Commands
