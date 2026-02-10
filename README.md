@@ -54,25 +54,23 @@ Extensible spinner framework for Neovim plugins and UI.
 
 # Getting Started
 
-Neovim's UI components (`statusline`, `tabline`, `winbar`, `extmark`,
-`float window`, `cmdline`) do not refresh automatically. To render dynamic spinners
-in Neovim, `spinner.nvim` refreshes the UI at fixed intervals internally.
+Neovim's UI components do not refresh automatically. `spinner.nvim` calls the
+Vim API at a fixed interval to refresh the UI.
 
-Each spinner is identified by a unique `id`, which `spinner.nvim` uses to manage
-individual spinner states.
+Each spinner is identified by a unique `id`, with option `kind` to indicate how
+`spinner.nvim` refresh the UI.
 
-Each spinner can have a optional option `kind`. Different kind values indicate
-how `spinner.nvim` refresh the Neovim UI:
-
-| kind       | refresh method                                                         |
-| ---------- | ---------------------------------------------------------------------- |
-| statusline | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ statusline = true}) |
-| tabline    | vim.cmd("redrawtabline) or vim.api.nvim\_\_redraw({ tabline = true})   |
-| winbar     | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ winbar = true})     |
-| extmark    | vim.api.nvim_buf_set_extmarks()                                        |
-| cursor     | vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines()                 |
-| cmdline    | vim.cmd("echo 'text'")                                                 |
-| custom     | you tell spinner.nvim how, see [Extend](#extend)                       |
+| kind          | refresh method                                                         |
+| ------------- | ---------------------------------------------------------------------- |
+| statusline    | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ statusline = true}) |
+| tabline       | vim.cmd("redrawtabline) or vim.api.nvim\_\_redraw({ tabline = true})   |
+| winbar        | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ winbar = true})     |
+| extmark       | vim.api.nvim_buf_set_extmarks()                                        |
+| cursor        | vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines()                 |
+| cmdline       | vim.cmd("echo 'text'")                                                 |
+| window-title  | vim.api.nvim_win_set_config()                                          |
+| window-border | vim.api.nvim_win_set_config()                                          |
+| custom        | you tell how, see [Extend](#extend)                                    |
 
 Control spinners via lua api:
 
