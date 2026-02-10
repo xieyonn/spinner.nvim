@@ -12,7 +12,7 @@ Extensible spinner framework for Neovim plugins and UI.
 # Features
 
 - **Multiple UI locations**:
-    - Pre-defined `statusline`, `tabline`, `winbar`, `cursor`, `extmark`, and `cmdline`
+    - Pre-defined `statusline`, `tabline`, `winbar`, `cursor`, `extmark`, `cmdline`, `window-title` and `window-footer`.
     - Any place you can render a text.
 - **LSP integration**: show spinners for `LspProgress` and `LspRequest`.
 - **Extensible API**: start/stop/pause a spinner.
@@ -34,6 +34,8 @@ Extensible spinner framework for Neovim plugins and UI.
     - [Cursor](#cursor)
     - [Extmark](#extmark)
     - [Cmdline](#cmdline)
+    - [Window Title](#window-title)
+    - [Window Footer](#window-footer)
 - [Extend](#extend)
 - [Options](#options)
     - [Lsp Integration](#lsp-integration)
@@ -457,16 +459,69 @@ require("spinner").config("my_spinner", {
 })
 ```
 
+## Window Title
+
+Configure a `window-title` spinner:
+
+```lua
+local win = nil -- target win
+local id = string.format("window-title:%d", win)
+require("spinner").config(id, {
+  kind = "window-title",
+  win = win, -- target win, must provided
+
+  pos = "center", -- optional, can be "left", "center", "right", default is "center"
+  hl_group = "", -- optional, set hl_group for text
+
+  -- optional, use fmt function to add extra text.
+  fmt = function(event)
+    local text = event.text
+    return text .. " This is a title"
+  end,
+})
+```
+
+A preview:
+
+<img src="https://github.com/user-attachments/assets/004f8907-d2ef-41b3-ade2-20d7335da24f" width="700" />
+
+## Window Footer
+
+Configure a `window-footer` spinner:
+
+```lua
+local win = nil -- target win
+local id = string.format("window-footer:%d", win)
+require("spinner").config(id, {
+  kind = "window-footer",
+  win = win, -- target win, must provided
+
+  pos = "center", -- optional, can be "left", "center", "right", default is "center"
+  hl_group = "", -- optional, set hl_group for text
+
+  -- optional, use fmt function to add extra text.
+  fmt = function(event)
+    local text = event.text
+    return text .. " This is a footer"
+  end,
+})
+```
+
+A preview:
+
+<img src="https://github.com/user-attachments/assets/daf3b537-4998-4016-8aac-d622e9b58f35" width="700" />
+
 # Extend
 
 `spinner.nvim` decides when to refresh the UI, and you decide where and how to do it.
 
-Use option `on_update_ui` to implement a `custom` spinner.
+Use option `ui_scope` and `on_update_ui` to implement a `custom` spinner.
 
 ```lua
-require("spinner").config("my_spinner", {
+local id = "my_spinner"
+require("spinner").config(id, {
   kind = "custom",
-  ui_scope = "my_custom_scope", -- optional: UI update scope for batching updates
+  ui_scope = id, -- tell spinner.nvim do not combined refreshes with other spinners
   on_update_ui = function(event)
     local status = event.status
     local text = event.text
@@ -484,6 +539,34 @@ will have their UI updates combined to improve performance. For example:
 - All `statusline` spinners share the `statusline` scope and update together.
 - All `tabline` spinners share the `tabline` scope and update together.
 - Custom spinners with the same `ui_scope` will update together.
+
+Here is a example shows how to display spinner in a window title. (only float
+window can set title)
+
+```lua
+local bufnr = vim.api.nvim_create_buf(false, true)
+local win = vim.api.nvim_open_win(bufnr, true, {})
+local spinner_id = string.format("win-%d", win)
+require("spinner").config(spinner_id, {
+  kind = "custom",
+  ui_scope = spinner_id, -- Tell spinner.nvim not to merge refreshes with other spinners.
+  on_update_ui = function(event)
+    if not (win and vim.api.nvim_win_is_valid(win)) then
+      return
+    end
+
+    vim.api.nvim_win_set_config(win, {
+      title = event.text,
+      title_pos = "center",
+    })
+  end,
+})
+
+-- start spinner
+require("spinner").start(spinner_id)
+```
+
+This is how the built-in `window-title` spinner is implemented.
 
 # Options
 
@@ -631,6 +714,8 @@ With tab completion for spinner IDs.
 ---| "cursor" -- Cursor spinner
 ---| "extmark" -- Extmark spinner
 ---| "cmdline" -- CommandLine spinner
+---| "window-title" -- WindowTitle spinner
+---| "window-footer" -- WindowFooter spinner
 
 ---@alias spinner.Opts
 ---| spinner.CoreOpts -- Core options
@@ -640,6 +725,8 @@ With tab completion for spinner IDs.
 ---| spinner.CursorOpts -- Cursor options
 ---| spinner.ExtmarkOpts -- Extmark options
 ---| spinner.CmdlineOpts -- CommandLine options
+---| spinner.WindowTitleOpts -- WindowTitle options
+---| spinner.WindowFooterOpts -- WindowFooter options
 ---
 ---@class spinner.CoreOpts
 ---@field kind? spinner.Kind -- Spinner kind
@@ -679,6 +766,18 @@ With tab completion for spinner IDs.
 ---@field hl_group? string -- Highlight group
 ---@field virt_text_pos? string -- options for vim.api.nvim_buf_set_extmark
 ---@field virt_text_win_col? integer -- options for `vim.api.nvim_buf_set_extmarks`
+---
+---@class spinner.WindowTitleOpts: spinner.CoreOpts
+---@field kind "window-title"
+---@field win integer -- target win id
+---@field pos? string -- position, can be on of "left", "center" or "right"
+---@field hl_group? string -- hl_group for text
+---
+---@class spinner.WindowFooterOpts: spinner.CoreOpts
+---@field kind "window-footer"
+---@field win integer -- target win id
+---@field pos? string -- position, can be on of "left", "center" or "right"
+---@field hl_group? string -- hl_group for text
 ---
 ---@class spinner.CmdlineOpts: spinner.CoreOpts
 ---@field kind "cmdline" -- CommandLine kind

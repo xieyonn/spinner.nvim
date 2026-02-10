@@ -4,6 +4,7 @@ local extmark = require("spinner.ui.extmark")
 local statusline = require("spinner.ui.statusline")
 local tabline = require("spinner.ui.tabline")
 local winbar = require("spinner.ui.winbar")
+local window_title = require("spinner.ui.window_title")
 
 ---@class spinner.ui
 local M = {}
@@ -45,6 +46,16 @@ local function get_ui_updater(state)
     return "cmdline", cmdline(state)
   end
 
+  if kind == "window-title" then
+    return ("window-title:%d:%s"):format(state.opts.win, state.opts.pos),
+      window_title(state, "title")
+  end
+
+  if kind == "window-footer" then
+    return ("window-footer:%d:%s"):format(state.opts.win, state.opts.pos),
+      window_title(state, "footer")
+  end
+
   return (state.opts.ui_scope or "custom"),
     (state.opts.on_update_ui or function() end)
 end
@@ -56,7 +67,7 @@ end
 function M.get_ui_updater(state)
   local ui_scope, ui_updater = get_ui_updater(state)
 
-  -- if provided a on_change method, call that instead.
+  -- if provided a on_update_ui method, call that instead.
   if state.opts.on_update_ui then
     return ui_scope,
       function()

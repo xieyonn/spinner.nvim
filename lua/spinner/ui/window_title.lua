@@ -1,0 +1,43 @@
+local utils = require("spinner.utils")
+
+---@param state spinner.State
+---@return function
+return function(state, kind)
+  local win = state.opts.win
+
+  utils.on_win_closed(win, function()
+    require("spinner").stop(state.id, true)
+  end)
+
+  return function()
+    if not (win and vim.api.nvim_win_is_valid(win)) then
+      -- prevent useless schedule
+      require("spinner").stop(state.id, true)
+      return
+    end
+
+    local cfg = vim.api.nvim_win_get_config(win)
+    if cfg.relative == "" then
+      vim.notify(
+        ("[spinner.nvim] can not display spinner in win: %d, this is no a float window"):format(
+          win
+        )
+      )
+      require("spinner").stop(state.id, true)
+    end
+
+    local text = state:render()
+    ---@type vim.api.keyset.win_config
+    local win_config = {}
+    if kind == "title" then
+      win_config.title = { { text, state.opts.hl_group } }
+      win_config.title_pos = state.opts.pos or "center"
+    end
+    if kind == "footer" then
+      win_config.footer = { { text, state.opts.hl_group } }
+      win_config.footer_pos = state.opts.pos or "center"
+    end
+
+    vim.api.nvim_win_set_config(win, win_config)
+  end
+end

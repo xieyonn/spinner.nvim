@@ -2,13 +2,13 @@ coverage:
   status:
     project:
       default:
-        target: "80"
+        target: "90"
         threshold: "0"
         strict: "no"
         patch: "yes"
   patch:
     default:
-      target: "0"
+      target: "90"
       threshold: "0"
       strict: "no"
 notify:

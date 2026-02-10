@@ -20,6 +20,8 @@ local STATUS = require("spinner.status")
 ---| "cursor" -- Cursor spinner
 ---| "extmark" -- Extmark spinner
 ---| "cmdline" -- CommandLine spinner
+---| "window-title" -- WindowTitle spinner
+---| "window-footer" -- WindowFooter spinner
 
 ---@alias spinner.Opts
 ---| spinner.CoreOpts -- Core options
@@ -29,6 +31,8 @@ local STATUS = require("spinner.status")
 ---| spinner.CursorOpts -- Cursor options
 ---| spinner.ExtmarkOpts -- Extmark options
 ---| spinner.CmdlineOpts -- CommandLine options
+---| spinner.WindowTitleOpts -- WindowTitle options
+---| spinner.WindowFooterOpts -- WindowFooter options
 ---
 ---@class spinner.CoreOpts
 ---@field kind? spinner.Kind -- Spinner kind
@@ -52,9 +56,9 @@ local STATUS = require("spinner.status")
 ---
 ---@class spinner.CursorOpts: spinner.CoreOpts
 ---@field kind "cursor" -- Cursor kind
----@field hl_group? string -- Highlight group
 ---@field row? integer -- Position relative to cursor
 ---@field col? integer -- Position relative to cursor
+---@field hl_group? string -- Highlight group
 ---@field zindex? integer -- Z-index
 ---@field border? string -- Border style
 ---@field winblend? integer -- Window blend
@@ -72,6 +76,18 @@ local STATUS = require("spinner.status")
 ---@class spinner.CmdlineOpts: spinner.CoreOpts
 ---@field kind "cmdline" -- CommandLine kind
 ---@field hl_group? string -- Highlight group
+---
+---@class spinner.WindowTitleOpts: spinner.CoreOpts
+---@field kind "window-title"
+---@field win integer -- target win id
+---@field pos? string -- position, can be on of "left", "center" or "right"
+---@field hl_group? string -- hl_group for text
+---
+---@class spinner.WindowFooterOpts: spinner.CoreOpts
+---@field kind "window-footer"
+---@field win integer -- target win id
+---@field pos? string -- position, can be on of "left", "center" or "right"
+---@field hl_group? string -- hl_group for text
 ---
 ---@class spinner.OnChangeEvent
 ---@field status spinner.Status -- Current status
@@ -112,10 +128,12 @@ local function validate_opts(opts)
           "extmark",
           "cmdline",
           "custom",
+          "window-title",
+          "window-footer",
         }, x)
     end,
     true,
-    "kind must be a string and one of: statusline, tabline, winbar, cursor, extmark, cmdline, custom"
+    "kind must be a string and one of: statusline, tabline, winbar, cursor, extmark, cmdline, custom, window-title, window-footer"
   )
 
   vim.validate(
@@ -186,11 +204,11 @@ local function validate_opts(opts)
       "opts.bufnr",
       opts.bufnr,
       "number",
-      true,
+      false,
       "bufnr must be a number"
     )
-    vim.validate("opts.row", opts.row, "number", true, "row must be a number")
-    vim.validate("opts.col", opts.col, "number", true, "col must be a number")
+    vim.validate("opts.row", opts.row, "number", false, "row must be a number")
+    vim.validate("opts.col", opts.col, "number", false, "col must be a number")
     vim.validate("opts.ns", opts.ns, "number", true, "ns must be a number")
     vim.validate(
       "opts.virt_text_pos",
@@ -212,6 +230,21 @@ local function validate_opts(opts)
     vim.notify(
       "[spinner.nvim] custom spinner must provided option on_update_ui",
       vim.log.levels.WARN
+    )
+  end
+
+  if opts.kind == "window-title" or opts.kind == "window-footer" then
+    vim.validate("opts.win", opts.win, "number", false, "win must be a number")
+    vim.validate("opts.pos", opts.pos, function(x)
+      return type(x) == "string"
+        and vim.list_contains({ "left", "center", "right" }, x)
+    end, true, "pos must be a string and one of: left, center, right")
+    vim.validate(
+      "opts.hl_group",
+      opts.hl_group,
+      "string",
+      true,
+      "hl_group must be a string"
     )
   end
 end
@@ -266,6 +299,10 @@ local function merge_opts(opts)
   if opts.kind == "cmdline" then
     opts.hl_group =
       vim.F.if_nil(opts.hl_group, config.global.cmdline_spinner.hl_group)
+  end
+
+  if opts.kind == "window-title" or opts.kind == "window-footer" then
+    opts.pos = opts.pos or "center"
   end
 
   return opts

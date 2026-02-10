@@ -133,4 +133,26 @@ function M.create_scratch_buffer()
   return buf
 end
 
+---Exec {cb} when window {win} close.
+---@param win integer
+---@param cb function
+function M.on_win_closed(win, cb)
+  local group = vim.api.nvim_create_augroup(
+    ("spinner-winid-%d"):format(win),
+    { clear = true }
+  )
+
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = group,
+    callback = function(args)
+      if tonumber(args.match) ~= win then
+        return
+      end
+
+      cb(win)
+      vim.api.nvim_del_augroup_by_id(group)
+    end,
+  })
+end
+
 return M

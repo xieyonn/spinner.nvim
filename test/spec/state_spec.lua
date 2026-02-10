@@ -873,6 +873,9 @@ describe("state", function()
       require("spinner.config").global.extmark_spinner.hl_group
     state = new("extmark", {
       kind = "extmark",
+      bufnr = 1,
+      row = 1,
+      col = 1,
     })
 
     eq(extmark_hl_group, state.opts.hl_group)
@@ -965,5 +968,65 @@ describe("state", function()
     eq(20, state.opts.col)
     eq(100, state.opts.ns)
     eq("TestHighlight", state.opts.hl_group)
+  end)
+
+  it("can set window-title spinner opts", function()
+    state = new("window-title", {
+      kind = "window-title",
+      win = 10,
+      pos = "left",
+      hl_group = "abc",
+    })
+    eq(10, state.opts.win)
+    eq("left", state.opts.pos)
+    eq("abc", state.opts.hl_group)
+  end)
+
+  it("can set window-footer spinner opts", function()
+    state = new("window-footer", {
+      kind = "window-footer",
+      win = 10,
+      pos = "left",
+      hl_group = "abc",
+    })
+    eq(10, state.opts.win)
+    eq("left", state.opts.pos)
+    eq("abc", state.opts.hl_group)
+  end)
+
+  it("window-title spinner can have pos optional", function()
+    state = new("window-title", {
+      kind = "window-title",
+      win = 10,
+      pos = nil,
+    })
+    eq(10, state.opts.win)
+    eq("center", state.opts.pos)
+  end)
+
+  it("window-footer spinner can have pos optional", function()
+    state = new("window-footer", {
+      kind = "window-footer",
+      win = 10,
+      pos = nil,
+    })
+    eq(10, state.opts.win)
+    eq("center", state.opts.pos)
+  end)
+
+  it("check option for window-title, window-footer", function()
+    assert.has_error(function()
+      new("window-title", {
+        kind = "window-title",
+        pos = "any",
+      })
+    end)
+
+    assert.has_error(function()
+      new("window-footer", {
+        kind = "window-footer",
+        pos = "any",
+      })
+    end)
   end)
 end)

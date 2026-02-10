@@ -2,7 +2,19 @@
 
 Thank you for your interest in contributing to `spinner.nvim`! We appreciate your help in improving this project.
 
-### Tests
+## TOOLS
+
+You may need install:
+
+- luarocks
+- prettier
+- shfmt
+- doctoc
+- busted
+- stylua
+- luacov
+
+## Tests
 
 - Install `busted` `luacov`
 
@@ -22,7 +34,7 @@ Run tests with coverage analysis:
 make cov
 ```
 
-### Formatting
+## Formatting
 
 Run the formatter before submitting changes:
 

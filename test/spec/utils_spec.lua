@@ -98,4 +98,33 @@ describe("utils", function()
       eq("first", captured_ctx.prev)
     end)
   end)
+
+  it("on_win_closed shoud call once then clear", function()
+    local win = 10
+    local group = 1
+    local autocmd_cb
+    local delete = spy.new(function() end)
+
+    stub(vim.api, "nvim_create_augroup").invokes(function(_, opts)
+      eq({ clear = true }, opts)
+      return group
+    end)
+    stub(vim.api, "nvim_create_autocmd").invokes(function(_, opts)
+      autocmd_cb = opts.callback
+    end)
+    stub(vim.api, "nvim_del_augroup_by_id").invokes(function(...)
+      delete(...)
+    end)
+
+    utils.on_win_closed(win, function() end)
+
+    -- not target window
+    autocmd_cb({ match = tostring(win + 1) })
+    assert.spy(delete).was.called(0)
+
+    -- target window
+    autocmd_cb({ match = tostring(win) })
+    assert.spy(delete).was.called(1)
+    assert.spy(delete).was.called_with(group)
+  end)
 end)
