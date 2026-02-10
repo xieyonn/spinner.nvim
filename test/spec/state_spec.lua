@@ -26,6 +26,8 @@ describe("state", function()
   end)
 
   it("new() with default", function()
+    local global = require("spinner.config").global
+
     state = new("test")
     eq("test", state.id)
     eq(1, state.index)
@@ -37,6 +39,14 @@ describe("state", function()
     eq(true, state.ui_scope ~= nil)
     eq(true, state.ui_updater ~= nil)
     eq("custom", state.opts.kind)
+    eq(require("spinner.pattern")[global.pattern], state.opts.pattern)
+    eq(global.ttl_ms, state.opts.ttl_ms)
+    eq(global.initial_delay_ms, state.opts.initial_delay_ms)
+    if not global.placeholder then
+      eq(nil, state.opts.placeholder)
+    else
+      eq(global.placeholder, state.opts.placeholder)
+    end
   end)
 
   it("new() kind can be optional", function()
@@ -70,6 +80,15 @@ describe("state", function()
     eq(pattern, state.opts.pattern)
   end)
 
+  it("new()should error if opts.pattern is invalid", function()
+    assert.has_error(function()
+      new("test", {
+        ---@diagnostic disable-next-line: assign-type-mismatch
+        pattern = 1,
+      })
+    end)
+  end)
+
   it("new() opts.placeholder is false", function()
     state = new("test", {
       kind = "statusline",
@@ -92,6 +111,15 @@ describe("state", function()
       eq(3, #state.opts.placeholder)
     end
   )
+
+  it("new() should error if placeholder is invalid", function()
+    assert.has_error(function()
+      new("test", {
+        ---@diagnostic disable-next-line: assign-type-mismatch
+        placeholder = {},
+      })
+    end)
+  end)
 
   it("start() STOPPED -> RUNNING", function()
     local need_refresh_ui, next_schedule_time = state:start()
@@ -751,7 +779,7 @@ describe("state", function()
     end
   )
 
-  it("should validate cursor-specific options", function()
+  it("should validate cursor options", function()
     state = new("test_cursor", {
       kind = "cursor",
       hl_group = "TestHighlight",
@@ -759,18 +787,30 @@ describe("state", function()
       zindex = 10,
       row = 1,
       col = 2,
-      border = "single",
     })
 
     eq(50, state.opts.winblend)
     eq(10, state.opts.zindex)
     eq(1, state.opts.row)
     eq(2, state.opts.col)
-    eq("single", state.opts.border)
     eq("TestHighlight", state.opts.hl_group)
   end)
 
-  it("should validate extmark-specific options", function()
+  it("should cursor spinner use global default", function()
+    -- use global default
+    state = new("test_cursor", {
+      kind = "cursor",
+    })
+
+    local global = require("spinner.config").global
+    eq(global.cursor_spinner.winblend, state.opts.winblend)
+    eq(global.cursor_spinner.hl_group, state.opts.hl_group)
+    eq(global.cursor_spinner.zindex, state.opts.zindex)
+    eq(global.cursor_spinner.row, state.opts.row)
+    eq(global.cursor_spinner.col, state.opts.col)
+  end)
+
+  it("should validate extmark  options", function()
     state = new("test_extmark", {
       kind = "extmark",
       bufnr = 1,
@@ -791,7 +831,42 @@ describe("state", function()
     eq(1, state.opts.virt_text_win_col)
   end)
 
-  it("should validate cmdline-specific options", function()
+  it("should extmark spinner use global default", function()
+    state = new("test", {
+      kind = "extmark",
+      bufnr = 1,
+      row = 10,
+      col = 20,
+      hl_group = nil,
+    })
+    eq(
+      require("spinner.config").global.extmark_spinner.hl_group,
+      state.opts.hl_group
+    )
+  end)
+
+  it("should error if extmark lack options", function()
+    local opts = {
+      kind = "extmark",
+      bufnr = 1,
+      row = 1,
+      col = 1,
+    }
+    opts.bufnr = nil
+    assert.has_error(function()
+      new("test", opts)
+    end)
+    opts.row = nil
+    assert.has_error(function()
+      new("test", opts)
+    end)
+    opts.col = nil
+    assert.has_error(function()
+      new("test", opts)
+    end)
+  end)
+
+  it("should validate cmdline specific options", function()
     state = new("test_cmdline", {
       kind = "cmdline",
       hl_group = "TestHighlight",
@@ -799,14 +874,13 @@ describe("state", function()
     eq("TestHighlight", state.opts.hl_group)
   end)
 
-  it("cmdline spinner can have default hl_group", function()
-    local cmdline_hl_group =
-      require("spinner.config").global.cmdline_spinner.hl_group
+  it("should cmdline use global default", function()
+    local global = require("spinner.config").global
     state = new("test_cmdline", {
       kind = "cmdline",
       hl_group = nil,
     })
-    eq(cmdline_hl_group, state.opts.hl_group)
+    eq(global.cmdline_spinner.hl_group, state.opts.hl_group)
   end)
 
   it("should handle stop with active <= 0", function()
@@ -866,19 +940,6 @@ describe("state", function()
 
     -- Restore original function
     require("spinner.event").attach = original_attach
-  end)
-
-  it("extmark spinner use default hl_group", function()
-    local extmark_hl_group =
-      require("spinner.config").global.extmark_spinner.hl_group
-    state = new("extmark", {
-      kind = "extmark",
-      bufnr = 1,
-      row = 1,
-      col = 1,
-    })
-
-    eq(extmark_hl_group, state.opts.hl_group)
   end)
 
   it("should handle custom spinner without on_update_ui", function()
@@ -942,7 +1003,6 @@ describe("state", function()
       zindex = 10,
       row = 1,
       col = 2,
-      border = "single",
     })
 
     eq("TestHighlight", state.opts.hl_group)
@@ -950,24 +1010,6 @@ describe("state", function()
     eq(10, state.opts.zindex)
     eq(1, state.opts.row)
     eq(2, state.opts.col)
-    eq("single", state.opts.border)
-  end)
-
-  it("should validate extmark-specific options completely", function()
-    state = new("test_extmark_complete", {
-      kind = "extmark",
-      bufnr = 1,
-      row = 10,
-      col = 20,
-      ns = 100,
-      hl_group = "TestHighlight",
-    })
-
-    eq(1, state.opts.bufnr)
-    eq(10, state.opts.row)
-    eq(20, state.opts.col)
-    eq(100, state.opts.ns)
-    eq("TestHighlight", state.opts.hl_group)
   end)
 
   it("can set window-title spinner opts", function()
@@ -1014,19 +1056,26 @@ describe("state", function()
     eq("center", state.opts.pos)
   end)
 
-  it("check option for window-title, window-footer", function()
-    assert.has_error(function()
-      new("window-title", {
-        kind = "window-title",
-        pos = "any",
-      })
-    end)
+  it(
+    "should error if win = nil for spinner window-title or window-footer",
+    function()
+      assert.has_error(function()
+        new("window-title", {
+          kind = "window-title",
+          pos = "any",
+          ---@diagnostic disable-next-line: assign-type-mismatch
+          win = nil,
+        })
+      end)
 
-    assert.has_error(function()
-      new("window-footer", {
-        kind = "window-footer",
-        pos = "any",
-      })
-    end)
-  end)
+      assert.has_error(function()
+        new("window-footer", {
+          kind = "window-footer",
+          pos = "any",
+          ---@diagnostic disable-next-line: assign-type-mismatch
+          win = nil,
+        })
+      end)
+    end
+  )
 end)

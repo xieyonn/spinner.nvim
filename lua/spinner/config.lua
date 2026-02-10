@@ -16,7 +16,6 @@ local M = {}
 ---@field zindex? integer
 ---@field row? integer
 ---@field col? integer
----@field border? string
 ---
 ---@class spinner.ExtmarkSpinnerConfig
 ---@field hl_group? string
@@ -62,9 +61,6 @@ local default_config = {
 
     -- CursorSpinner window position, relative to cursor.
     col = 1,
-
-    -- CursorSpinner window option.
-    border = "none",
   },
 
   extmark_spinner = {
@@ -91,9 +87,6 @@ local function validate_config(opts)
     "opts.pattern",
     opts.pattern,
     function(x)
-      if x == nil then
-        return true
-      end
       if type(x) == "string" then
         ---@cast x string
         local patterns = require("spinner.pattern")
@@ -104,6 +97,7 @@ local function validate_config(opts)
         ---@cast x spinner.Pattern
         return x.interval ~= nil
           and type(x.interval) == "number"
+          and x.interval > 0
           and x.frames ~= nil
           and type(x.frames) == "table"
           and #x.frames > 0
@@ -115,66 +109,77 @@ local function validate_config(opts)
   )
 
   vim.validate("opts.ttl_ms", opts.ttl_ms, function(x)
-    return x == nil or (type(x) == "number" and x >= 0)
+    return (type(x) == "number" and x >= 0)
   end, true, "ttl_ms must be a number >= 0")
   vim.validate("opts.initial_delay_ms", opts.initial_delay_ms, function(x)
-    return x == nil or (type(x) == "number" and x >= 0)
+    return (type(x) == "number" and x >= 0)
   end, true, "initial_delay_ms must be a number >= 0")
-  vim.validate(
-    "opts.placeholder",
-    opts.placeholder,
-    { "string", "boolean", "nil" },
-    true,
-    "placeholder must be a string or boolean"
-  )
+  vim.validate("opts.placeholder", opts.placeholder, function(x)
+    return x == nil or type(x) == "boolean" or type(x) == "string",
+      "placeholder must be a string or boolean"
+  end)
 
   if opts.cursor_spinner then
     vim.validate(
-      "cs.hl_group",
+      "opts.cursor_spinner.hl_group",
       opts.cursor_spinner.hl_group,
-      { "string", "nil" },
+      "string",
       true,
       "hl_group must be a string"
     )
 
-    vim.validate("cs.winblend", opts.cursor_spinner.winblend, function(x)
-      return x == nil or (type(x) == "number" and x >= 0 and x <= 100)
-    end, true, "winblend must be a number between 0 and 100")
-
-    vim.validate("cs.zindex", opts.cursor_spinner.zindex, function(x)
-      return x == nil or (type(x) == "number" and x >= 0)
-    end, true, "zindex must be a number >= 0")
+    vim.validate(
+      "opts.cursor_spinner.winblend",
+      opts.cursor_spinner.winblend,
+      function(x)
+        return (type(x) == "number" and x >= 0 and x <= 100)
+      end,
+      true,
+      "winblend must be a number between 0 and 100"
+    )
 
     vim.validate(
-      "cs.row",
+      "opts.cursor_spinner.zindex",
+      opts.cursor_spinner.zindex,
+      function(x)
+        return (type(x) == "number" and x >= 0)
+      end,
+      true,
+      "zindex must be a number >= 0"
+    )
+
+    vim.validate(
+      "opts.cursor_spinner.row",
       opts.cursor_spinner.row,
-      { "number", "nil" },
+      "number",
       true,
       "row must be a number"
     )
 
     vim.validate(
-      "cs.col",
+      "opts.cursor_spinner.col",
       opts.cursor_spinner.col,
-      { "number", "nil" },
+      "number",
       true,
       "col must be a number"
-    )
-
-    vim.validate(
-      "cs.border",
-      opts.cursor_spinner.border,
-      { "string", "nil" },
-      true,
-      "border must be a string"
     )
   end
 
   if opts.extmark_spinner then
     vim.validate(
-      "es.hl_group",
+      "opts.extmark_spinner.hl_group",
       opts.extmark_spinner.hl_group,
-      { "string", "nil" },
+      "string",
+      true,
+      "hl_group must be a string"
+    )
+  end
+
+  if opts.cmdline_spinner then
+    vim.validate(
+      "opts.cmdline_spinner.hl_group",
+      opts.cmdline_spinner.hl_group,
+      "string",
       true,
       "hl_group must be a string"
     )

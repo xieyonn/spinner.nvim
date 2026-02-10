@@ -33,7 +33,7 @@ return function(state)
         height = 1,
         style = "minimal",
         focusable = false,
-        border = opts.border,
+        border = "none",
         zindex = opts.zindex,
         noautocmd = true,
       })

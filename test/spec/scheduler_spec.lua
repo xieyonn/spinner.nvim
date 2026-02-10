@@ -200,4 +200,16 @@ describe("scheduler", function()
     tick()
     assert.spy(f).called(5)
   end)
+
+  it("should notify error if fail to create timer #id", function()
+    stub(uv, "new_timer", nil)
+    stub(vim, "notify")
+
+    s = scheduler.new()
+    s:schedule(function() end)
+    ---@diagnostic disable-next-line
+    assert.stub(vim.notify).called(1)
+    ---@diagnostic disable-next-line
+    vim.notify:revert()
+  end)
 end)

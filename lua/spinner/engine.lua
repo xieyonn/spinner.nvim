@@ -17,12 +17,11 @@ function M.new(scheduler)
     state_map = setmetatable({}, {
       __index = function(self, k)
         local v = rawget(self, k)
-        if v then
-          return v
+        if not v then
+          v = new_state(k)
+          rawset(self, k, v)
         end
 
-        v = new_state(k)
-        rawset(self, k, v)
         return v
       end,
     }),

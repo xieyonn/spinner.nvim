@@ -368,5 +368,6 @@ describe("engine", function()
   it("should auto create spinner state", function()
     local state = engine.state_map.spinner_id
     eq(true, state ~= nil)
+    eq(state, engine.state_map.spinner_id)
   end)
 end)

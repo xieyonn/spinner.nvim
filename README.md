@@ -69,7 +69,7 @@ Each spinner is identified by a unique `id`, with option `kind` to indicate how
 | cursor        | vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines()                 |
 | cmdline       | vim.cmd("echo 'text'")                                                 |
 | window-title  | vim.api.nvim_win_set_config()                                          |
-| window-border | vim.api.nvim_win_set_config()                                          |
+| window-footer | vim.api.nvim_win_set_config()                                          |
 | custom        | you tell how, see [Extend](#extend)                                    |
 
 Control spinners via lua api:
@@ -160,9 +160,6 @@ require("spinner").setup({
     -- row = -1 col = 1 means Top-Right next to cursor.
     row = -1,
     col = 1,
-
-    -- CursorSpinner window option.
-    border = "none",
   }
 
   extmark_spinner = {
@@ -389,9 +386,6 @@ require("spinner").config("cursor", {
 
   -- CursorSpinner window position, relative to cursor.
   col = 1, --optional
-
-  -- CursorSpinner window option.
-  border = "none", --optional
 })
 ```
 
@@ -752,7 +746,6 @@ With tab completion for spinner IDs.
 ---@field row? integer -- Position relative to cursor
 ---@field col? integer -- Position relative to cursor
 ---@field zindex? integer -- Z-index
----@field border? string -- Border style
 ---@field winblend? integer -- Window blend
 ---
 ---@class spinner.ExtmarkOpts: spinner.CoreOpts
@@ -875,7 +868,6 @@ local STATUS = {
 ---@field zindex? integer -- Default z-index
 ---@field row? integer -- Default row offset 0-based
 ---@field col? integer -- Default column offset 0-based
----@field border? string -- Default border style
 ---
 ---@class spinner.ExtmarkSpinnerConfig
 ---@field hl_group? string -- Default highlight group

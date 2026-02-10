@@ -59,5 +59,17 @@ describe("set", function()
     ---@diagnostic disable-next-line :param-type-mismatch
     s:add(nil)
     eq(0, s.n) -- nil not added
+
+    ---@diagnostic disable-next-line: param-type-mismatch
+    s:delete(nil)
+  end)
+
+  it("delete a non-exist item correctly", function()
+    local s = set.new()
+    s:add(1)
+    eq(true, s:has(1))
+
+    s:delete(2)
+    eq(true, s:has(1))
   end)
 end)

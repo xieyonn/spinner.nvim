@@ -60,7 +60,6 @@ local STATUS = require("spinner.status")
 ---@field col? integer -- Position relative to cursor
 ---@field hl_group? string -- Highlight group
 ---@field zindex? integer -- Z-index
----@field border? string -- Border style
 ---@field winblend? integer -- Window blend
 ---
 ---@class spinner.ExtmarkOpts: spinner.CoreOpts
@@ -116,9 +115,6 @@ local function validate_opts(opts)
     "opts.kind",
     opts.kind,
     function(x)
-      if x == nil then
-        return true
-      end
       return type(x) == "string"
         and vim.list_contains({
           "statusline",
@@ -140,9 +136,6 @@ local function validate_opts(opts)
     "opts.pattern",
     opts.pattern,
     function(x)
-      if x == nil then
-        return true
-      end
       if type(x) == "string" then
         ---@cast x string
         local patterns = require("spinner.pattern")
@@ -171,13 +164,10 @@ local function validate_opts(opts)
     return x == nil or (type(x) == "number" and x >= 0)
   end, true, "initial_delay_ms must be a number >= 0")
 
-  vim.validate(
-    "opts.placeholder",
-    opts.placeholder,
-    { "string", "boolean" },
-    true,
-    "placeholder must be a string or boolean"
-  )
+  vim.validate("opts.placeholder", opts.placeholder, function(x)
+    return x == nil or type(x) == "boolean" or type(x) == "string",
+      "placeholder must be a string or boolean"
+  end)
 
   vim.validate(
     "opts.hl_group",
@@ -196,7 +186,6 @@ local function validate_opts(opts)
     end, true, "zindex must be a number >= 0")
     vim.validate("opts.row", opts.row, "number", true, "row must be a number")
     vim.validate("opts.col", opts.col, "number", true, "col must be a number")
-    vim.validate("opts.border", opts.border, { "string", "table" }, true)
   end
 
   if opts.kind == "extmark" then
@@ -288,7 +277,6 @@ local function merge_opts(opts)
     opts.zindex = vim.F.if_nil(opts.zindex, config.global.cursor_spinner.zindex)
     opts.row = vim.F.if_nil(opts.row, config.global.cursor_spinner.row)
     opts.col = vim.F.if_nil(opts.col, config.global.cursor_spinner.col)
-    opts.border = vim.F.if_nil(opts.border, config.global.cursor_spinner.border)
   end
 
   if opts.kind == "extmark" then
