@@ -50,9 +50,9 @@ Extensible spinner framework for Neovim plugins and UI.
 
 - **Multiple UI locations**:
     - Pre-defined `statusline`, `tabline`, `winbar`, `cursor`, `extmark`, `cmdline`, `window-title` and `window-footer`.
-    - Any place you can render a text.
+    - Any place you can render a text. see |spinner-extend|
 - **LSP integration**: show spinners for `LspProgress` and `LspRequest`.
-- **Extensible API**: start/stop/pause a spinner.
+- **Extensible API**: start / stop / pause a spinner in your plugins and configurations.
 - **Configurable spinner patterns**: Built-in presets with 70+ patterns <https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua>
 
 
@@ -116,7 +116,11 @@ Using lazy.nvim <https://github.com/folke/lazy.nvim>:
     {
       "xieyonn/spinner.nvim",
       config = function()
-        require("spinner").setup()
+        ---@type spinner
+        local sp = require("spinner")
+    
+        -- NO need to call setup() if you are fine with defaults.
+        sp.setup()
       end
     }
 <
@@ -133,11 +137,11 @@ Type in command line:
 Will open a window displaying all built-in spinners.
 
 
+
+
 SETUP                                                          *spinner-setup*
 
-**NO** need to call `require("spinner").setup()` if you are fine with defaults.
-
-Click to expand ~
+Setup defaults for spinners.
 
 >lua
     require("spinner").setup({
@@ -564,7 +568,7 @@ Use option `ui_scope` and `on_update_ui` to implement a `custom` spinner.
     local id = "my_spinner"
     require("spinner").config(id, {
       kind = "custom",
-      ui_scope = id, -- tell spinner.nvim do not combined refreshes with other spinners
+      ui_scope = id, -- tell spinner.nvim do not combine refreshes with other spinners
       on_update_ui = function(event)
         local status = event.status
         local text = event.text

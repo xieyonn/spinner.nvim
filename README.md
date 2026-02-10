@@ -7,15 +7,15 @@ Extensible spinner framework for Neovim plugins and UI.
 [![Requires Neovim 0.11+](https://img.shields.io/badge/requires-nvim%200.11%2B-9cf?logo=neovim)](https://neovim.io/)
 [![license](https://img.shields.io/github/license/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/blob/main/LICENSE)
 
-<img src="https://github.com/user-attachments/assets/3b12eceb-6b70-49af-b106-ead86246883d" width="560" />
+<img src="https://github.com/user-attachments/assets/d8caeedd-017f-419b-a394-f3ce6dc25e3e" width="560" />
 
 # Features
 
 - **Multiple UI locations**:
     - Pre-defined `statusline`, `tabline`, `winbar`, `cursor`, `extmark`, `cmdline`, `window-title` and `window-footer`.
-    - Any place you can render a text.
+    - Any place you can render a text. see [Extend](#extend)
 - **LSP integration**: show spinners for `LspProgress` and `LspRequest`.
-- **Extensible API**: start/stop/pause a spinner.
+- **Extensible API**: start / stop / pause a spinner in your plugins and configurations.
 - **Configurable spinner patterns**: Built-in presets with 70+ [patterns](https://github.com/xieyonn/spinner.nvim/blob/main/lua/spinner/pattern.lua)
 
 <div>
@@ -99,7 +99,11 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 {
   "xieyonn/spinner.nvim",
   config = function()
-    require("spinner").setup()
+    ---@type spinner
+    local sp = require("spinner")
+
+    -- NO need to call setup() if you are fine with defaults.
+    sp.setup()
   end
 }
 ```
@@ -114,13 +118,11 @@ Type in command line:
 
 Will open a window displaying all built-in spinners.
 
+<img src="https://github.com/user-attachments/assets/36000baf-54ab-4e93-b04a-be9d364223dc" width="800" />
+
 ## Setup
 
-**NO** need to call `require("spinner").setup()` if you are fine with defaults.
-
-<details>
-
-<summary>Click to expand</summary>
+Setup defaults for spinners.
 
 ```lua
 require("spinner").setup({
@@ -176,8 +178,6 @@ require("spinner").setup({
   },
 })
 ```
-
-</details>
 
 # Example
 
@@ -521,7 +521,7 @@ Use option `ui_scope` and `on_update_ui` to implement a `custom` spinner.
 local id = "my_spinner"
 require("spinner").config(id, {
   kind = "custom",
-  ui_scope = id, -- tell spinner.nvim do not combined refreshes with other spinners
+  ui_scope = id, -- tell spinner.nvim do not combine refreshes with other spinners
   on_update_ui = function(event)
     local status = event.status
     local text = event.text
