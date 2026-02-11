@@ -54,11 +54,19 @@ Extensible spinner framework for Neovim plugins and UI.
 
 # Getting Started
 
-Neovim's UI components do not refresh automatically. `spinner.nvim` calls the
-Vim API at a fixed interval to refresh the UI.
+Neovim's UI components do **NOT** refresh automatically.
 
-Each spinner is identified by a unique `id`, with option `kind` to indicate how
-`spinner.nvim` refresh the UI.
+So there are 2 ways to make the spinner animate:
+
+- Insert a function into the UI component. It renders the spinner text on UI
+  refresh, then refreshes this UI component at regular intervals. eg:
+  statusline/tabline/winbar spinner.
+- Periodically call the API to set the text content of the UI component. eg:
+  cursor/extmark spinner.
+
+`spinner.nvim` manages the internal state of the spinner and determines when to
+refresh the UI. Each spinner is identified by a unique `id`, with option `kind`
+to indicate how `spinner.nvim` refresh the UI.
 
 | kind          | refresh method                                                         |
 | ------------- | ---------------------------------------------------------------------- |
@@ -137,7 +145,7 @@ require("spinner").setup({
   initial_delay_ms = 0,
 
   -- Text displayed when the spinner is inactive.
-  -- Used in statusline/tabline/winbar/extmark/cursor
+  -- **Not** Used in cmdline
   --
   -- true: show an empty string, with length equal to spinner frames.
   -- false: equals to "".
@@ -157,7 +165,7 @@ require("spinner").setup({
     zindex = 50,
 
     -- CursorSpinner window position, relative to cursor.
-    -- row = -1 col = 1 means Top-Right next to cursor.
+    -- row = -1 col = 1 means Above-Right.
     row = -1,
     col = 1,
   }
