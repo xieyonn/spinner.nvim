@@ -951,38 +951,21 @@ describe("state", function()
     require("spinner.event").attach = original_attach
   end)
 
-  it("should handle custom spinner without on_update_ui", function()
-    -- Capture notification calls
-    local original_notify = vim.notify
-    local notify_called = false
-    local notify_msg = nil
-
-    ---@diagnostic disable-next-line: duplicate-set-field
-    vim.notify = function(msg)
-      notify_called = true
-      notify_msg = msg
-    end
-
-    -- Create a custom spinner without on_update_ui
-    local success = pcall(function()
-      return new("test_custom", {
+  it("custom spinner should have on_update_ui option", function()
+    assert.has_error(function()
+      state = new("custom", {
         kind = "custom",
-        -- Missing on_update_ui
+        on_update_ui = nil,
       })
     end)
+  end)
 
-    eq(true, success)
-    eq(true, notify_called)
-    assert.truthy(
-      notify_msg
-        and string.find(
-          notify_msg,
-          "custom spinner must provided option on_update_ui"
-        )
-    )
-
-    -- Restore original notify
-    vim.notify = original_notify
+  it("custom spinner shoud use id as ui_scope by default", function()
+    state = new("custom-id", {
+      kind = "custom",
+      on_update_ui = function() end,
+    })
+    eq("custom-id", state.ui_scope)
   end)
 
   it("custom spinner use ui_scope from opts", function()
@@ -993,15 +976,6 @@ describe("state", function()
     })
 
     eq("abc", state.ui_scope)
-  end)
-
-  it("custom spinner use custom as default ui_scope", function()
-    state = new("custom", {
-      kind = "custom",
-      on_update_ui = function() end,
-    })
-
-    eq("custom", state.ui_scope)
   end)
 
   it("should validate cursor-specific options completely", function()

@@ -473,6 +473,8 @@ require("spinner").config(id, {
 })
 ```
 
+Spinner will stop when window close.
+
 A preview:
 
 <img src="https://github.com/user-attachments/assets/004f8907-d2ef-41b3-ade2-20d7335da24f" width="700" />
@@ -499,6 +501,8 @@ require("spinner").config(id, {
 })
 ```
 
+Spinner will stop when window close.
+
 A preview:
 
 <img src="https://github.com/user-attachments/assets/daf3b537-4998-4016-8aac-d622e9b58f35" width="700" />
@@ -507,26 +511,30 @@ A preview:
 
 `spinner.nvim` decides when to refresh the UI, and you decide where and how to do it.
 
-Use option `ui_scope` and `on_update_ui` to implement a `custom` spinner.
+Use option `on_update_ui` to implement a `custom` spinner.
 
 ```lua
 local id = "my_spinner"
 require("spinner").config(id, {
   kind = "custom",
-  ui_scope = id, -- tell spinner.nvim do not combine refreshes with other spinners
+
+  -- must provide, called when refresh UI.
   on_update_ui = function(event)
-    local status = event.status
-    local text = event.text
+    local status = event.status -- spinner status
+    local text = event.text -- spinner text
 
     -- do what you want
   end,
+
+  -- optional, used to improve performance, take spinner id by default
+  ui_scope = id,
 })
 ```
 
-`on_update_ui` is called when the UI needs to be refreshed, function signature see [API Reference](#api-reference)
+Option `ui_scope` defines the scope for batching UI updates.
 
-`ui_scope` defines the scope for batching UI updates. Spinners with the same `ui_scope`
-will have their UI updates combined to improve performance. For example:
+Spinners with the same `ui_scope` will have their UI updates combined within a
+short period of time to improve performance.
 
 - All `statusline` spinners share the `statusline` scope and update together.
 - All `tabline` spinners share the `tabline` scope and update together.
@@ -711,6 +719,7 @@ With tab completion for spinner IDs.
 
 ---@alias spinner.Opts
 ---| spinner.CoreOpts -- Core options
+---| spinner.CustomOpts -- Custom options
 ---| spinner.StatuslineOpts -- Statusline options
 ---| spinner.TablineOpts -- Tabline options
 ---| spinner.WinbarOpts -- Winbar options
@@ -728,7 +737,7 @@ With tab completion for spinner IDs.
 ---@field placeholder? string|boolean -- Placeholder text
 ---@field attach? spinner.Event -- Event attachment
 ---@field on_update_ui? fun(event: spinner.OnChangeEvent) -- UI update callback
----@field ui_scope? string custom ui_scope
+---@field ui_scope? string custom ui_scope, used to improve UI refresh performance
 ---@field fmt? fun(event: spinner.OnChangeEvent): string -- Format function
 ---
 ---@class spinner.StatuslineOpts: spinner.CoreOpts
@@ -772,6 +781,11 @@ With tab completion for spinner IDs.
 ---
 ---@class spinner.CmdlineOpts: spinner.CoreOpts
 ---@field kind "cmdline" -- CommandLine kind
+---
+---@class spinner.CustomOpts: spinner.CoreOpts
+---@field kind "custom"
+---@field on_update_ui fun(event: spinner.OnChangeEvent) -- UI update callback
+---@field ui_scope? string custom ui_scope, use spinner id by default
 ---
 ---@class spinner.OnChangeEvent
 ---@field status spinner.Status -- Current status

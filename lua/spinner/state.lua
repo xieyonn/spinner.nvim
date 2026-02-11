@@ -25,6 +25,7 @@ local STATUS = require("spinner.status")
 
 ---@alias spinner.Opts
 ---| spinner.CoreOpts -- Core options
+---| spinner.CustomOpts -- Custom options
 ---| spinner.StatuslineOpts -- Status line options
 ---| spinner.TablineOpts -- Tabline options
 ---| spinner.WinbarOpts -- Winbar options
@@ -42,7 +43,7 @@ local STATUS = require("spinner.status")
 ---@field placeholder? string|boolean -- Placeholder text
 ---@field attach? spinner.Event -- Event attachment
 ---@field on_update_ui? fun(event: spinner.OnChangeEvent) -- UI update callback
----@field ui_scope? string custom ui_scope
+---@field ui_scope? string custom ui_scope, used to improve UI refresh performance
 ---@field fmt? fun(event: spinner.OnChangeEvent): string -- Format function
 ---
 ---@class spinner.StatuslineOpts: spinner.CoreOpts
@@ -87,6 +88,11 @@ local STATUS = require("spinner.status")
 ---@field win integer -- target win id
 ---@field pos? string -- position, can be on of "left", "center" or "right"
 ---@field hl_group? string -- hl_group for text
+---
+---@class spinner.CustomOpts: spinner.CoreOpts
+---@field kind "custom"
+---@field on_update_ui fun(event: spinner.OnChangeEvent) -- UI update callback
+---@field ui_scope? string custom ui_scope, use spinner id by default
 ---
 ---@class spinner.OnChangeEvent
 ---@field status spinner.Status -- Current status
@@ -223,10 +229,20 @@ local function validate_opts(opts)
     )
   end
 
-  if opts.kind == "custom" and opts.on_update_ui == nil then
-    vim.notify(
-      "[spinner.nvim] custom spinner must provided option on_update_ui",
-      vim.log.levels.WARN
+  if opts.kind == "custom" then
+    vim.validate(
+      "opts.ui_scope",
+      opts.ui_scope,
+      "string",
+      true,
+      "ui_scope must be a string"
+    )
+    vim.validate(
+      "opts.on_update_ui",
+      opts.on_update_ui,
+      "callable",
+      false,
+      "custom spinner must provided on_update_ui, and must be a function or callable"
     )
   end
 

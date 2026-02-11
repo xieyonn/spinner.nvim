@@ -56,7 +56,9 @@ local function get_ui_updater(state)
       window_title(state, "footer")
   end
 
-  return (state.opts.ui_scope or "custom"),
+  -- kind == "custom"
+  -- use id as ui_scope to avoid unnecessary trouble.
+  return (state.opts.ui_scope or state.id),
     (state.opts.on_update_ui or function() end)
 end
 
