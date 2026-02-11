@@ -779,6 +779,15 @@ describe("state", function()
     end
   )
 
+  it("config() fmt should be a function or callback", function()
+    assert.has_error(function()
+      state = new("test", {
+        ---@diagnostic disable-next-line: assign-type-mismatch
+        fmt = "a",
+      })
+    end)
+  end)
+
   it("should validate cursor options", function()
     state = new("test_cursor", {
       kind = "cursor",

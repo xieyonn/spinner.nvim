@@ -156,6 +156,14 @@ local function validate_opts(opts)
     "pattern must be a string (existing pattern name) or a table with interval (number) and frames (non-empty table)"
   )
 
+  vim.validate(
+    "opts.fmt",
+    opts.fmt,
+    "callable",
+    true,
+    "fmt must be a function or callable function"
+  )
+
   vim.validate("opts.ttl_ms", opts.ttl_ms, function(x)
     return x == nil or (type(x) == "number" and x >= 0)
   end, true, "ttl_ms must be a number >= 0")
@@ -317,7 +325,7 @@ function M:render()
     text = ("{{SPINNER_HIGHLIGHT}}%s{{END_HIGHLIGHT}}"):format(text)
   end
 
-  if self.opts.fmt and vim.is_callable(self.opts.fmt) then
+  if self.opts.fmt then
     text = self.opts.fmt({
       text = text,
       status = self.status,
