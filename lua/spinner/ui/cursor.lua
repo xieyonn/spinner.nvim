@@ -9,7 +9,7 @@ return function(state)
   return function()
     local opts = state.opts
 
-    if STATUS.STOPPED == state.status then
+    if STATUS.STOPPED == state.status or STATUS.INIT == state.status then
       if win and vim.api.nvim_win_is_valid(win) then
         vim.api.nvim_win_close(win, true)
         win, buf = nil, nil
@@ -40,7 +40,7 @@ return function(state)
 
       vim.api.nvim_set_option_value(
         "winhighlight",
-        "Normal:" .. opts.hl_group,
+        "Normal:" .. state:get_hl_group(),
         { win = win }
       )
       vim.api.nvim_set_option_value("winblend", opts.winblend, { win = win })

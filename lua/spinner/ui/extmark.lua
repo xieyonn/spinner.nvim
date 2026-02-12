@@ -6,6 +6,7 @@ local spinner_ns = vim.api.nvim_create_namespace("spinner.nvim")
 ---@return function
 return function(state)
   local extmark_id = nil ---@type integer|nil
+
   local stop = function()
     require("spinner").stop(state.id, true)
   end
@@ -24,7 +25,10 @@ return function(state)
       return
     end
 
-    if STATUS.STOPPED == state.status then
+    local text = state:render()
+
+    -- only delete extmark if text is empty, eg: we have a non-empty placeholder
+    if (STATUS.STOPPED == state.status) and "" == text then
       if extmark_id then
         pcall(vim.api.nvim_buf_del_extmark, opts.bufnr, ns, extmark_id)
         extmark_id = nil
@@ -32,11 +36,9 @@ return function(state)
       return
     end
 
-    local text = state:render()
-
     ---@type vim.api.keyset.set_extmark
     local extmark_opts = {
-      virt_text = { { text, opts.hl_group or "Spinner" } },
+      virt_text = { { text, state:get_hl_group() } },
       virt_text_pos = opts.virt_text_pos or "eol",
     }
     if opts.virt_text_win_col then

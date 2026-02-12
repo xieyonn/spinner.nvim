@@ -32,7 +32,7 @@ describe("state", function()
     eq("test", state.id)
     eq(1, state.index)
     eq(0, state.active)
-    eq(STATUS.STOPPED, state.status)
+    eq(STATUS.INIT, state.status)
     eq(0, state.start_time)
     eq(0, state.last_spin)
     eq(true, state.opts ~= nil)
@@ -116,7 +116,7 @@ describe("state", function()
     assert.has_error(function()
       new("test", {
         ---@diagnostic disable-next-line: assign-type-mismatch
-        placeholder = {},
+        placeholder = 1,
       })
     end)
   end)
@@ -296,15 +296,18 @@ describe("state", function()
     state = new("test", {
       kind = "cursor",
       placeholder = true,
+      pattern = {
+        frames = { "123", "123", "123" },
+        interval = 10,
+      },
     })
 
     local text = state:render()
 
-    eq(true, text ~= "")
-    eq(vim.fn.strdisplaywidth(state.opts.pattern.frames[1]), #text)
+    eq(string.rep(" ", 3), text)
   end)
 
-  it("render() returns placeholder with placeholder value", function()
+  it("render() returns placeholder with string value", function()
     state = new("test", {
       kind = "cursor",
       placeholder = "abc",
@@ -322,26 +325,46 @@ describe("state", function()
     eq("", state:render())
   end)
 
-  it("render() returns empty if kind is cmdline", function()
+  it("render() should return empty if placeholder = false", function()
     state = new("test", {
-      kind = "cmdline",
-      placeholder = "abc",
+      kind = "statusline",
+      placeholder = false,
     })
-
     eq("", state:render())
   end)
 
-  it("render() cmdline with highlighting", function()
+  it(
+    "render() should return empty if placeholder is a table with wrong key",
+    function()
+      state = new("test", {
+        kind = "statusline",
+        placeholder = {
+          abc = "abc",
+        },
+      })
+      eq("", state:render())
+    end
+  )
+
+  it("render() shoud use placeholder.init", function()
     state = new("test", {
-      kind = "cmdline",
-      pattern = {
-        frames = { "abc" },
-        interval = 10,
+      placeholder = {
+        init = "hello",
       },
     })
-    state:start()
+    eq(STATUS.INIT, state.status)
+    eq("hello", state:render())
+  end)
 
-    eq("{{SPINNER_HIGHLIGHT}}abc{{END_HIGHLIGHT}}", state:render())
+  it("render() shoud use placeholder.stop", function()
+    state = new("test", {
+      placeholder = {
+        stopped = "hello",
+      },
+    })
+    state:stop()
+    eq(STATUS.STOPPED, state.status)
+    eq("hello", state:render())
   end)
 
   it("render() PAUSE returns same string", function()
@@ -366,7 +389,8 @@ describe("state", function()
 
       eq(
         true,
-        state.status == STATUS.STOPPED
+        state.status == STATUS.INIT
+          or state.status == STATUS.STOPPED
           or state.status == STATUS.RUNNING
           or state.status == STATUS.PAUSED
           or state.status == STATUS.DELAYED
@@ -386,7 +410,7 @@ describe("state", function()
       state[op](state)
     end
 
-    if state.status == STATUS.STOPPED then
+    if state.status == STATUS.STOPPED or state.status == STATUS.INIT then
       eq(0, state.active)
     else
       eq(true, state.active >= 0)
@@ -648,14 +672,14 @@ describe("state", function()
     "stop with force does not trigger UI refresh if already stopped",
     function()
       eq(0, state.active)
-      eq(STATUS.STOPPED, state.status)
+      eq(STATUS.INIT, state.status)
 
       -- Force stop on already stopped spinner should return false (no UI refresh needed)
       local fully_stopped, refresh_needed = state:stop(true)
       eq(true, fully_stopped)
       eq(false, refresh_needed)
       eq(0, state.active)
-      eq(STATUS.STOPPED, state.status)
+      eq(STATUS.INIT, state.status)
     end
   )
 
@@ -680,7 +704,7 @@ describe("state", function()
       assert.spy(update_ui1).was.called(1)
       local args = update_ui1.calls[1].vals[1]
       eq("string", type(args.text)) -- Should contain rendered text
-      eq(STATUS.STOPPED, args and args.status or nil) -- Initial state is STOPPED
+      eq(STATUS.INIT, args and args.status or nil) -- Initial state is INIT
 
       -- Test updating on_update_ui via config
       state:config({
@@ -754,28 +778,6 @@ describe("state", function()
       eq(300, state.opts.pattern.interval)
       eq(3, #state.opts.pattern.frames)
       eq("statusline", state.opts.kind)
-    end
-  )
-
-  it(
-    "render() should use fmt function to format spinner text when kind is cmdline",
-    function()
-      local fmt_func = function(event)
-        return "[" .. event.text .. "]"
-      end
-
-      state = new("test_cmdline_fmt", {
-        kind = "cmdline",
-        pattern = {
-          frames = { "a", "b" },
-          interval = 100,
-        },
-        fmt = fmt_func,
-      })
-
-      eq("", state:render())
-      state:start()
-      eq("[{{SPINNER_HIGHLIGHT}}a{{END_HIGHLIGHT}}]", state:render())
     end
   )
 
@@ -1134,8 +1136,103 @@ describe("state", function()
         state = new("test", {
           kind = kind,
         })
-        eq(nil, state.opts.placeholder)
+        eq(nil, state.opts.hl_group)
       end
     end
   )
+
+  it("config() shoud error if placeholder is invalid", function()
+    state = new("test")
+    assert.has_error(function()
+      state:config({
+        placeholder = 1,
+      })
+    end)
+
+    assert.has_error(function()
+      state:config({
+        placeholder = { init = 1 },
+      })
+    end)
+
+    assert.has_error(function()
+      state:config({
+        placeholder = { stopped = 1 },
+      })
+    end)
+  end)
+
+  it("get_hl_group() shoud get global hl_group by default", function()
+    state = new("test", {
+      kind = "custom",
+      on_update_ui = function() end,
+    })
+    eq(require("spinner.config").global.hl_group, state:get_hl_group())
+  end)
+
+  it("get_hl_group() shoud get opts hl_group provided", function()
+    state = new("test", {
+      kind = "custom",
+      on_update_ui = function() end,
+      hl_group = "abc",
+    })
+    eq("abc", state:get_hl_group())
+  end)
+
+  it("get_hl_group() shoud get empty if no config is wrong", function()
+    state = new("test", {
+      kind = "custom",
+      on_update_ui = function() end,
+      hl_group = {
+        abc = "abc",
+      },
+    })
+    eq(nil, state:get_hl_group())
+  end)
+
+  it("get_hl_group() shoud get hl_group by status", function()
+    state = new("test", {
+      kind = "custom",
+      hl_group = {
+        init = "init",
+        paused = "paused",
+        running = "running",
+        stopped = "stopped",
+      },
+      on_update_ui = function() end,
+    })
+    eq("init", state:get_hl_group())
+    state.status = STATUS.PAUSED
+    eq("paused", state:get_hl_group())
+    state.status = STATUS.RUNNING
+    eq("running", state:get_hl_group())
+    state.status = STATUS.STOPPED
+    eq("stopped", state:get_hl_group())
+  end)
+
+  it("config() shoud error if hl_group is invalid", function()
+    for _, key in ipairs({ "init", "paused", "running", "stopped" }) do
+      assert.has_error(function()
+        local hl = {}
+        hl[key] = 1
+        new("test", {
+          kind = "statusline",
+          hl_group = hl,
+        })
+      end)
+    end
+  end)
+
+  it("render() cmdline with highlighting", function()
+    state = new("test", {
+      kind = "cmdline",
+      pattern = {
+        frames = { "abc" },
+        interval = 10,
+      },
+    })
+    state:start()
+
+    eq("{{SPINNER_HIGHLIGHT}}abc{{END_HIGHLIGHT}}", state:render())
+  end)
 end)

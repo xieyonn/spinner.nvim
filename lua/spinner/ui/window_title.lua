@@ -31,11 +31,11 @@ return function(state, kind)
     ---@type vim.api.keyset.win_config
     local win_config = {}
     if kind == "title" then
-      win_config.title = { { text, state.opts.hl_group } }
+      win_config.title = { { text, state:get_hl_group() } }
       win_config.title_pos = state.opts.pos or "center"
     end
     if kind == "footer" then
-      win_config.footer = { { text, state.opts.hl_group } }
+      win_config.footer = { { text, state:get_hl_group() } }
       win_config.footer_pos = state.opts.pos or "center"
     end
 
