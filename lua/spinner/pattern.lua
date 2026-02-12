@@ -1000,6 +1000,13 @@ return {
       "-",
     },
   },
+  blink = {
+    interval = 500,
+    frames = {
+      "●",
+      " ",
+    },
+  },
   arrow = {
     interval = 100,
     frames = {
