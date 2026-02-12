@@ -294,7 +294,7 @@ describe("state", function()
 
   it("render() returns placeholder with placeholder = true", function()
     state = new("test", {
-      kind = "statusline",
+      kind = "cursor",
       placeholder = true,
     })
 
@@ -306,7 +306,7 @@ describe("state", function()
 
   it("render() returns placeholder with placeholder value", function()
     state = new("test", {
-      kind = "statusline",
+      kind = "cursor",
       placeholder = "abc",
     })
 
@@ -701,7 +701,7 @@ describe("state", function()
       end
 
       state = new("test_fmt", {
-        kind = "statusline",
+        kind = "cursor",
         pattern = {
           frames = { "a", "b" },
           interval = 100,
@@ -813,7 +813,7 @@ describe("state", function()
 
     local global = require("spinner.config").global
     eq(global.cursor_spinner.winblend, state.opts.winblend)
-    eq(global.cursor_spinner.hl_group, state.opts.hl_group)
+    eq(global.hl_group, state.opts.hl_group)
     eq(global.cursor_spinner.zindex, state.opts.zindex)
     eq(global.cursor_spinner.row, state.opts.row)
     eq(global.cursor_spinner.col, state.opts.col)
@@ -848,10 +848,7 @@ describe("state", function()
       col = 20,
       hl_group = nil,
     })
-    eq(
-      require("spinner.config").global.extmark_spinner.hl_group,
-      state.opts.hl_group
-    )
+    eq(require("spinner.config").global.hl_group, state.opts.hl_group)
   end)
 
   it("should error if extmark lack options", function()
@@ -889,7 +886,7 @@ describe("state", function()
       kind = "cmdline",
       hl_group = nil,
     })
-    eq(global.cmdline_spinner.hl_group, state.opts.hl_group)
+    eq(global.hl_group, state.opts.hl_group)
   end)
 
   it("should handle stop with active <= 0", function()
@@ -1099,4 +1096,28 @@ describe("state", function()
       eq(STATUS.RUNNING, state.status)
     end
   )
+
+  it(
+    "render() statusline/tabline/winbar shoud return empty when placeholder is nil",
+    function()
+      for _, kind in ipairs({ "statusline", "tabline", "winbar" }) do
+        state = new("kind", {
+          kind = kind,
+          placeholder = nil,
+        })
+        eq("", state:render())
+      end
+    end
+  )
+
+  it("render() statusline/tabline/winbar shoud apply hl_group", function()
+    for _, kind in ipairs({ "statusline", "tabline", "winbar" }) do
+      state = new("kind", {
+        kind = kind,
+        hl_group = "abc",
+        placeholder = "123",
+      })
+      eq("%#abc#123%*", state:render())
+    end
+  end)
 end)

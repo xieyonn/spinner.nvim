@@ -6,22 +6,14 @@ local M = {}
 ---@field ttl_ms? integer
 ---@field initial_delay_ms? integer
 ---@field placeholder? string|boolean
+---@field hl_group? string
 ---@field cursor_spinner? spinner.CursorSpinnerConfig
----@field extmark_spinner? spinner.ExtmarkSpinnerConfig
----@field cmdline_spinner? spinner.CmdlineSpinnerConfig
 ---
 ---@class spinner.CursorSpinnerConfig
----@field hl_group? string
 ---@field winblend? integer
 ---@field zindex? integer
 ---@field row? integer
 ---@field col? integer
----
----@class spinner.ExtmarkSpinnerConfig
----@field hl_group? string
----
----@class spinner.CmdlineSpinnerConfig
----@field hl_group? string
 
 ---@type spinner.Config
 local default_config = {
@@ -46,10 +38,10 @@ local default_config = {
   -- eg: show ✔ when lsp progress finished.
   placeholder = false,
 
-  cursor_spinner = {
-    -- Highlight group for text, use fg of `Comment` by default.
-    hl_group = "Spinner",
+  -- Highlight group for text, use fg of `Comment` by default.
+  hl_group = "Spinner",
 
+  cursor_spinner = {
     -- CursorSpinner window option.
     winblend = 60,
 
@@ -61,16 +53,6 @@ local default_config = {
 
     -- CursorSpinner window position, relative to cursor.
     col = 1,
-  },
-
-  extmark_spinner = {
-    -- Highlight group for text, use fg of `Comment` by default.
-    hl_group = "Spinner",
-  },
-
-  cmdline_spinner = {
-    -- Highlight group for text, use fg of `Comment` by default.
-    hl_group = "Spinner",
   },
 }
 
@@ -119,15 +101,15 @@ local function validate_config(opts)
       "placeholder must be a string or boolean"
   end)
 
-  if opts.cursor_spinner then
-    vim.validate(
-      "opts.cursor_spinner.hl_group",
-      opts.cursor_spinner.hl_group,
-      "string",
-      true,
-      "hl_group must be a string"
-    )
+  vim.validate(
+    "opts.hl_group",
+    opts.hl_group,
+    "string",
+    true,
+    "hl_group must be a string"
+  )
 
+  if opts.cursor_spinner then
     vim.validate(
       "opts.cursor_spinner.winblend",
       opts.cursor_spinner.winblend,
@@ -162,26 +144,6 @@ local function validate_config(opts)
       "number",
       true,
       "col must be a number"
-    )
-  end
-
-  if opts.extmark_spinner then
-    vim.validate(
-      "opts.extmark_spinner.hl_group",
-      opts.extmark_spinner.hl_group,
-      "string",
-      true,
-      "hl_group must be a string"
-    )
-  end
-
-  if opts.cmdline_spinner then
-    vim.validate(
-      "opts.cmdline_spinner.hl_group",
-      opts.cmdline_spinner.hl_group,
-      "string",
-      true,
-      "hl_group must be a string"
     )
   end
 end

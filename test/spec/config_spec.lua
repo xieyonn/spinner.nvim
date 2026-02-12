@@ -24,18 +24,12 @@ describe("config", function()
       ttl_ms = 10,
       initial_delay_ms = 10,
       placeholder = true,
+      hl_group = "Abc",
       cursor_spinner = {
-        hl_group = "abc",
         winblend = 100,
         zindex = 100,
         row = 100,
         col = 100,
-      },
-      extmark_spinner = {
-        hl_group = "abc",
-      },
-      cmdline_spinner = {
-        hl_group = "abc",
       },
     }
 
@@ -61,12 +55,10 @@ describe("config", function()
     setup_check({ initial_delay_ms = -1 })
     setup_check({ placeholder = {} })
     setup_check({ placeholder = function() end })
-    setup_check({ cursor_spinner = { hl_group = 0 } })
+    setup_check({ hl_group = 0 })
     setup_check({ cursor_spinner = { winblend = "abc" } })
     setup_check({ cursor_spinner = { zindex = "abc" } })
     setup_check({ cursor_spinner = { row = "abc" } })
     setup_check({ cursor_spinner = { col = "abc" } })
-    setup_check({ extmark_spinner = { hl_group = 1 } })
-    setup_check({ cmdline_spinner = { hl_group = 1 } })
   end)
 end)

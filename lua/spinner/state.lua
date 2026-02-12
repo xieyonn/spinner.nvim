@@ -250,13 +250,6 @@ local function validate_opts(opts)
       return type(x) == "string"
         and vim.list_contains({ "left", "center", "right" }, x)
     end, true, "pos must be a string and one of: left, center, right")
-    vim.validate(
-      "opts.hl_group",
-      opts.hl_group,
-      "string",
-      true,
-      "hl_group must be a string"
-    )
   end
 end
 
@@ -291,24 +284,13 @@ local function merge_opts(opts)
   opts.initial_delay_ms =
     vim.F.if_nil(opts.initial_delay_ms, config.global.initial_delay_ms)
 
+  opts.hl_group = vim.F.if_nil(opts.hl_group, config.global.hl_group)
   if opts.kind == "cursor" then
-    opts.hl_group =
-      vim.F.if_nil(opts.hl_group, config.global.cursor_spinner.hl_group)
     opts.winblend =
       vim.F.if_nil(opts.winblend, config.global.cursor_spinner.winblend)
     opts.zindex = vim.F.if_nil(opts.zindex, config.global.cursor_spinner.zindex)
     opts.row = vim.F.if_nil(opts.row, config.global.cursor_spinner.row)
     opts.col = vim.F.if_nil(opts.col, config.global.cursor_spinner.col)
-  end
-
-  if opts.kind == "extmark" then
-    opts.hl_group =
-      vim.F.if_nil(opts.hl_group, config.global.extmark_spinner.hl_group)
-  end
-
-  if opts.kind == "cmdline" then
-    opts.hl_group =
-      vim.F.if_nil(opts.hl_group, config.global.cmdline_spinner.hl_group)
   end
 
   if opts.kind == "window-title" or opts.kind == "window-footer" then
@@ -335,8 +317,18 @@ function M:render()
     text = self.opts.pattern.frames[self.index] or ""
   end
 
-  if text ~= "" and self.opts.kind == "cmdline" then
-    text = ("{{SPINNER_HIGHLIGHT}}%s{{END_HIGHLIGHT}}"):format(text)
+  -- apply hl_group
+  if text and text ~= "" then
+    if self.opts.kind == "cmdline" then
+      text = ("{{SPINNER_HIGHLIGHT}}%s{{END_HIGHLIGHT}}"):format(text)
+    end
+
+    if
+      vim.list_contains({ "statusline", "tabline", "winbar" }, self.opts.kind)
+    then
+      -- %#hl_group# text %*
+      text = string.format("%%#%s#%s%%*", self.opts.hl_group, text)
+    end
   end
 
   if self.opts.fmt then

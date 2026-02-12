@@ -44,6 +44,7 @@ Extensible spinner framework for Neovim plugins and UI.
     - [Initial Delay](#initial-delay)
     - [Placeholder](#placeholder)
     - [Formatting](#formatting)
+    - [Highlight](#highlight)
 - [Commands](#commands)
 - [API Reference](#api-reference)
 - [Contributing](#contributing)
@@ -154,10 +155,10 @@ require("spinner").setup({
   -- eg: show ✔ when lsp progress finished.
   placeholder = false,
 
-  cursor_spinner = {
-    -- Highlight group for text, use fg of `Comment` by default.
-    hl_group = "Spinner",
+  -- Highlight group for text, `Spinner` use fg of `Comment` by default.
+  hl_group = "Spinner",
 
+  cursor_spinner = {
     -- CursorSpinner window option.
     winblend = 60,
 
@@ -169,16 +170,6 @@ require("spinner").setup({
     row = -1,
     col = 1,
   }
-
-  extmark_spinner = {
-    -- Highlight group for text, use fg of `Comment` by default.
-    hl_group = "Spinner",
-  },
-
-  cmdline_spinner = {
-    -- Highlight group for text, use fg of `Comment` by default.
-    hl_group = "Spinner",
-  },
 })
 ```
 
@@ -680,6 +671,27 @@ require("spinner").config("my_spinner", {
 })
 ```
 
+## Highlight
+
+You can customize the spinner text color by using the `hl_group` option.
+
+```lua
+require("spinner").config("my_spinner", {
+  kind = "statusline",
+  hl_group = "Spinner"
+})
+```
+
+Or set a global default value in `setup()`
+
+```lua
+require("spinner").setup({
+  hl_group = "Spinner",
+})
+```
+
+> statusline / tabline / winbar will wrap text in format `%#HL_GROUP#...%*`
+
 # Commands
 
 `spinner.nvim` provides a command `Spinner`:
@@ -880,9 +892,8 @@ local STATUS = {
 ---@field ttl_ms? integer -- Default TTL
 ---@field initial_delay_ms? integer -- Default delay
 ---@field placeholder? string|boolean -- Default placeholder
+---@field hl_group? string
 ---@field cursor_spinner? spinner.CursorSpinnerConfig -- Default cursor config
----@field extmark_spinner? spinner.ExtmarkSpinnerConfig -- Default extmark config
----@field cmdline_spinner? spinner.CmdlineSpinnerConfig -- Default cmdline config
 ---
 ---@class spinner.CursorSpinnerConfig
 ---@field hl_group? string -- Default highlight group
@@ -890,12 +901,6 @@ local STATUS = {
 ---@field zindex? integer -- Default z-index
 ---@field row? integer -- Default row offset 0-based
 ---@field col? integer -- Default column offset 0-based
----
----@class spinner.ExtmarkSpinnerConfig
----@field hl_group? string -- Default highlight group
----
----@class spinner.CmdlineSpinnerConfig
----@field hl_group? string -- Default highlight group
 ```
 
 </details>
