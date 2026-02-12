@@ -118,6 +118,7 @@ end
 function M:config(id, opts)
   local state = self.state_map[id]
   state:config(opts)
+  self:update_ui(state)
 end
 
 ---Renders the current frame of a spinner with the given ID.

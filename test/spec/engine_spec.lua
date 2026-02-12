@@ -27,6 +27,7 @@ describe("engine", function()
       ui_updater = function()
         return function() end
       end,
+      config = spy.new(function() end),
     }
 
     local dummy_scheduler = { schedule = function() end }
@@ -337,5 +338,13 @@ describe("engine", function()
 
     engine:config("test_id", opts)
     eq("abc", engine.state_map["test_id"].opts.placeholder)
+  end)
+
+  it("shoud refresh ui when call config", function()
+    spy.on(engine, "update_ui")
+
+    engine:config("test_id")
+
+    assert.spy(engine.update_ui).was.called(1)
   end)
 end)

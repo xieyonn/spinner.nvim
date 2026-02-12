@@ -510,7 +510,15 @@ A preview:
 
 `spinner.nvim` decides when to refresh the UI, you decide where and how.
 
-Use option `on_update_ui` to implement a `custom` spinner.
+Extend a spinner using the `on_update_ui` option, which is a `function` that
+gets called **every** time the UI needs to be refreshed, including:
+
+- init: When config
+- start: when starting
+- pause: When paused
+- stop: When stopping
+
+> if spinner has initial_delay_ms option, only refresh ui when timeout expires.
 
 ```lua
 local id = "my_spinner"
@@ -519,8 +527,8 @@ require("spinner").config(id, {
 
   -- must provide, called when refresh UI.
   on_update_ui = function(event)
-    local status = event.status -- spinner status
-    local text = event.text -- spinner text
+    local status = event.status -- current status
+    local text = event.text -- current text (including placeholder)
 
     -- do what you want
   end,
