@@ -108,8 +108,6 @@ local STATUS = require("spinner.status")
 ---@field last_spin integer -- Last spin time in ms
 ---@field ui_scope spinner.UIScope -- UI scope
 ---@field ui_updater spinner.UIUpdater -- UI update function
----@field interval integer -- Animation interval
----@field frames string[] -- Animation frames
 ---@field opts spinner.Opts -- Configuration options
 local M = {}
 M.__index = M
