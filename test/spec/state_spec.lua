@@ -1098,12 +1098,18 @@ describe("state", function()
   )
 
   it(
-    "render() statusline/tabline/winbar shoud return empty when placeholder is nil",
+    "render() statusline/tabline/winbar shoud return empty when placeholder is nil or false",
     function()
       for _, kind in ipairs({ "statusline", "tabline", "winbar" }) do
         state = new("kind", {
           kind = kind,
           placeholder = nil,
+        })
+        eq("", state:render())
+
+        state = new("kind", {
+          kind = kind,
+          placeholder = false,
         })
         eq("", state:render())
       end
