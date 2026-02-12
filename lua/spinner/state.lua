@@ -1,6 +1,45 @@
+-- State Transition Diagram:
+--
+-- 1. Creation:
+--    new() → INIT
+--
+-- 2. Start (start()):
+--    INIT → DELAYED  (if initial_delay_ms > 0)
+--    INIT → RUNNING  (if initial_delay_ms == 0)
+--    STOPPED → DELAYED  (if initial_delay_ms > 0)
+--    STOPPED → RUNNING  (if initial_delay_ms == 0)
+--    PAUSED → RUNNING  (resume from pause)
+--
+-- 3. Stop (stop()):
+--    RUNNING → STOPPED  (when active refs reach 0 or force stop)
+--    DELAYED → STOPPED  (when active refs reach 0 or force stop)
+--    PAUSED → STOPPED   (when active refs reach 0 or force stop)
+--    INIT → STOPPED     (via stop() with force or active refs)
+--
+-- 4. Pause (pause()):
+--    RUNNING → PAUSED
+--    DELAYED → PAUSED
+--
+-- 5. Automatic transitions:
+--    DELAYED → RUNNING  (after initial_delay_ms expires in step())
+--    RUNNING → STOPPED  (when TTL expires in step())
+--
+-- State semantics:
+-- - INIT: Configured but never started (no API calls yet)
+-- - STOPPED: Previously started, then stopped
+-- - DELAYED: Initial delay before animation starts
+-- - RUNNING: Actively animating
+-- - PAUSED: Animation paused (can be resumed)
+--
+-- Active reference counting:
+-- - start() increments active count
+-- - stop() decrements active count; state becomes STOPPED when count reaches 0
+-- - force stop ignores active count and immediately stops
+
 local config = require("spinner.config")
 local event = require("spinner.event")
 local pattern_map = require("spinner.pattern")
+local set = require("spinner.set")
 local ui = require("spinner.ui")
 local utils = require("spinner.utils")
 
@@ -40,11 +79,15 @@ local STATUS = require("spinner.status")
 ---@field pattern? string|spinner.Pattern -- Animation pattern
 ---@field ttl_ms? integer -- Time to live in ms
 ---@field initial_delay_ms? integer -- Initial delay in ms
----@field placeholder? string|boolean -- Placeholder text
+---@field placeholder? string|boolean|spinner.Placeholder -- Placeholder text
 ---@field attach? spinner.Event -- Event attachment
 ---@field on_update_ui? fun(event: spinner.OnChangeEvent) -- UI update callback
 ---@field ui_scope? string custom ui_scope, used to improve UI refresh performance
 ---@field fmt? fun(event: spinner.OnChangeEvent): string -- Format function
+---
+---@class spinner.Placeholder
+---@field init? string -- when status == init (new create)
+---@field stopped? string -- when status == stopped
 ---
 ---@class spinner.StatuslineOpts: spinner.CoreOpts
 ---@field kind "statusline" -- Statusline kind
@@ -59,9 +102,15 @@ local STATUS = require("spinner.status")
 ---@field kind "cursor" -- Cursor kind
 ---@field row? integer -- Position relative to cursor
 ---@field col? integer -- Position relative to cursor
----@field hl_group? string -- Highlight group
+---@field hl_group? string|spinner.HighlightGroup -- Highlight group
 ---@field zindex? integer -- Z-index
 ---@field winblend? integer -- Window blend
+---
+---@class spinner.HighlightGroup
+---@field init? string -- used in init status
+---@field running? string -- used in running status
+---@field paused? string -- used in paused status
+---@field stopped? string -- used in stopped status
 ---
 ---@class spinner.ExtmarkOpts: spinner.CoreOpts
 ---@field kind "extmark" -- Extmark kind
@@ -69,25 +118,21 @@ local STATUS = require("spinner.status")
 ---@field row integer -- Line position 0-based
 ---@field col integer -- Column position 0-based
 ---@field ns? integer -- Namespace
----@field hl_group? string -- Highlight group
 ---@field virt_text_pos? string -- options for vim.api.nvim_buf_set_extmark
 ---@field virt_text_win_col? integer -- options for `vim.api.nvim_buf_set_extmarks`
 ---
 ---@class spinner.CmdlineOpts: spinner.CoreOpts
 ---@field kind "cmdline" -- CommandLine kind
----@field hl_group? string -- Highlight group
 ---
 ---@class spinner.WindowTitleOpts: spinner.CoreOpts
 ---@field kind "window-title"
 ---@field win integer -- target win id
 ---@field pos? string -- position, can be on of "left", "center" or "right"
----@field hl_group? string -- hl_group for text
 ---
 ---@class spinner.WindowFooterOpts: spinner.CoreOpts
 ---@field kind "window-footer"
 ---@field win integer -- target win id
 ---@field pos? string -- position, can be on of "left", "center" or "right"
----@field hl_group? string -- hl_group for text
 ---
 ---@class spinner.CustomOpts: spinner.CoreOpts
 ---@field kind "custom"
@@ -97,6 +142,7 @@ local STATUS = require("spinner.status")
 ---@class spinner.OnChangeEvent
 ---@field status spinner.Status -- Current status
 ---@field text string -- Current text
+---@field hl_group? string -- Current hl_group
 
 ---@class spinner.State
 ---@field id string -- Spinner identifier
@@ -177,17 +223,50 @@ local function validate_opts(opts)
   end, true, "initial_delay_ms must be a number >= 0")
 
   vim.validate("opts.placeholder", opts.placeholder, function(x)
-    return x == nil or type(x) == "boolean" or type(x) == "string",
-      "placeholder must be a string or boolean"
-  end)
+    local t = type(x)
+    if t == "string" then
+      return true
+    end
+    if t == "boolean" then
+      return true
+    end
+    if t == "table" then
+      if x.init and type(x.init) ~= "string" then
+        return false, "placeholder.init must be nil or string"
+      end
+      if x.stopped and type(x.stopped) ~= "string" then
+        return false, "placeholder.stopped must be nil or string"
+      end
 
-  vim.validate(
-    "opts.hl_group",
-    opts.hl_group,
-    "string",
-    true,
-    "hl_group must be a string"
-  )
+      return true
+    end
+    return false,
+      "placeholder must be a string or boolean or table with optional field init, stopped"
+  end, true)
+
+  vim.validate("opts.hl_group", opts.hl_group, function(x)
+    local t = type(x)
+    if t == "string" then
+      return true
+    end
+    if t == "table" then
+      if x.init and type(x.init) ~= "string" then
+        return false, "hl_group.init must be nil or string"
+      end
+      if x.paused and type(x.paused) ~= "string" then
+        return false, "hl_group.paused must be nil or string"
+      end
+      if x.running and type(x.running) ~= "string" then
+        return false, "hl_group.running must be nil or string"
+      end
+      if x.stopped and type(x.stopped) ~= "string" then
+        return false, "hl_group.stopped must be nil or string"
+      end
+      return true
+    end
+    return false,
+      "hl_group must be a string or table with optional field init, paused, running, stopped"
+  end, true)
 
   if opts.kind == "cursor" then
     vim.validate("opts.winblend", opts.winblend, function(x)
@@ -307,38 +386,94 @@ local function merge_opts(opts)
   return opts
 end
 
+---Get placeholder
+---@return string
+---@private
+function M:get_placeholder()
+  if nil == self.opts.placeholder then
+    return ""
+  end
+
+  local t = type(self.opts.placeholder)
+  if t == "string" then
+    return self.opts.placeholder --[[@as string]]
+  end
+
+  if t == "table" then
+    if STATUS.INIT == self.status then
+      return self.opts.placeholder.init or "" --[[@as string]]
+    end
+
+    if STATUS.STOPPED == self.status then
+      return self.opts.placeholder.stopped or "" --[[@as string]]
+    end
+  end
+
+  return ""
+end
+
+---Get hl_group value, base on kind or status
+---@return string|nil
+function M:get_hl_group()
+  if nil == self.opts.hl_group then
+    return nil
+  end
+
+  local t = type(self.opts.hl_group)
+  if t == "string" then
+    return self.opts.hl_group --[[@as string]]
+  end
+  if t == "table" then
+    if STATUS.INIT == self.status then
+      return self.opts.hl_group.init
+    end
+    if STATUS.PAUSED == self.status then
+      return self.opts.hl_group.paused
+    end
+    if STATUS.RUNNING == self.status then
+      return self.opts.hl_group.running
+    end
+    if STATUS.STOPPED == self.status then
+      return self.opts.hl_group.stopped
+    end
+  end
+
+  return nil
+end
+
+---@type spinner.Set used in render()
+local hl_group_line = set.new({
+  "statusline",
+  "tabline",
+  "winbar",
+})
+
 ---Render spinner as text
 ---@return string text
 function M:render()
   local text = ""
 
-  if self.status == STATUS.DELAYED or self.status == STATUS.STOPPED then
-    -- apply placeholder
-    if self.opts.kind == "cmdline" then
-      -- cmdline text do not support placeholder
-      return ""
-    end
-
-    text = self.opts.placeholder or "" --[[@as string]]
+  if
+    self.status == STATUS.DELAYED
+    or self.status == STATUS.STOPPED
+    or self.status == STATUS.INIT
+  then
+    text = self:get_placeholder()
   else
     text = self.opts.pattern.frames[self.index] or ""
   end
 
   -- apply hl_group
-  if text and text ~= "" then
+  local hl = self:get_hl_group()
+  if text ~= "" and hl and hl ~= "" then
     if self.opts.kind == "cmdline" then
+      -- cmdline should separate text and format text
       text = ("{{SPINNER_HIGHLIGHT}}%s{{END_HIGHLIGHT}}"):format(text)
     end
 
-    if
-      self.opts.hl_group
-      and vim.list_contains(
-        { "statusline", "tabline", "winbar" },
-        self.opts.kind
-      )
-    then
-      -- %#hl_group# text %*
-      text = string.format("%%#%s#%s%%*", self.opts.hl_group, text)
+    -- apply hl_group format for lines: %#hl_group# text %*
+    if hl_group_line:has(self.opts.kind) then
+      text = string.format("%%#%s#%s%%*", hl, text)
     end
   end
 
@@ -346,6 +481,7 @@ function M:render()
     text = self.opts.fmt({
       text = text,
       status = self.status,
+      hl_group = hl,
     })
   end
 
@@ -389,17 +525,19 @@ function M:start()
   self.last_spin = 0
 
   if self.opts.initial_delay_ms > 0 then
-    -- STOPPED -> DELAYED
+    -- INIT/STOPPED -> DELAYED
     self.status = STATUS.DELAYED
     return false, self.opts.initial_delay_ms
   end
 
-  -- STOPPED -> RUNNING
+  -- INIT/STOPPED -> RUNNING
   self.status = STATUS.RUNNING
   return true, self.opts.pattern.interval
 end
 
 ---Do stop
+---@private
+---
 ---@param self spinner.State
 local function do_stop(self)
   self.started = false
@@ -415,8 +553,8 @@ end
 ---@return boolean true if spinner needs UI refresh, false if no refresh needed
 function M:stop(force)
   if force == true then
-    if self.status == STATUS.STOPPED then
-      -- Already stopped, no UI refresh needed
+    if self.status == STATUS.STOPPED or self.status == STATUS.INIT then
+      -- Already stopped or never started, no UI refresh needed
       return true, false
     end
     do_stop(self)
@@ -426,6 +564,12 @@ function M:stop(force)
   if self.status == STATUS.STOPPED then
     -- Already stopped, no UI refresh needed
     return true, false
+  end
+
+  if self.status == STATUS.INIT then
+    -- Never started, converts INIT to STOPPED, need ui refresh
+    do_stop(self)
+    return true, true
   end
 
   if self.active <= 0 then
@@ -456,7 +600,11 @@ end
 ---@return boolean need_refresh_ui
 ---@return integer|nil next_time, nil means no schedule.
 function M:step(now_ms)
-  if STATUS.STOPPED == self.status or STATUS.PAUSED == self.status then
+  if
+    STATUS.STOPPED == self.status
+    or STATUS.PAUSED == self.status
+    or STATUS.INIT == self.status
+  then
     return false, nil
   end
 
@@ -483,6 +631,8 @@ function M:step(now_ms)
 end
 
 ---Spin frames
+---@private
+---
 ---@param now_ms integer current schedule time
 ---@return boolean true means need update UI.
 ---@return integer|nil next schedule time, relative time
@@ -536,7 +686,7 @@ local function new(id, opts)
     started = false,
     index = 1,
     active = 0,
-    status = STATUS.STOPPED,
+    status = STATUS.INIT,
     start_time = 0,
     last_spin = 0,
     opts = merge_opts(opts),

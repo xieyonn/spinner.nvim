@@ -6,7 +6,7 @@ local M = {}
 ---@field ttl_ms? integer
 ---@field initial_delay_ms? integer
 ---@field placeholder? string|boolean
----@field hl_group? string
+---@field hl_group? string|spinner.HighlightGroup
 ---@field cursor_spinner? spinner.CursorSpinnerConfig
 ---
 ---@class spinner.CursorSpinnerConfig
@@ -28,17 +28,16 @@ local default_config = {
   -- This helps prevent the spinner from briefly flashing for short-lived tasks.
   initial_delay_ms = 0,
 
-  -- Text displayed when the spinner is inactive.
-  -- Used in statusline/tabline/winbar/extmark/cursor
+  -- Text displayed when the spinner is idle/stoped.
   --
   -- true: show an empty string, with length equal to spinner frames.
   -- false: equals to "".
-  -- or string values
-  --
-  -- eg: show ✔ when lsp progress finished.
+  -- or string value, eg: show ✔ when lsp progress finished.
+  -- or a table value, eg: { init = "", stopped = "" }
   placeholder = false,
 
   -- Highlight group for text, use fg of `Comment` by default.
+  -- or be a table { init = "", running = "", paused = "", stopped = "" }
   hl_group = "Spinner",
 
   cursor_spinner = {

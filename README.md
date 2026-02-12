@@ -145,17 +145,16 @@ require("spinner").setup({
   -- This helps prevent the spinner from briefly flashing for short-lived tasks.
   initial_delay_ms = 0,
 
-  -- Text displayed when the spinner is inactive.
-  -- **Not** Used in cmdline
+  -- Text displayed when the spinner is idle/stoped.
   --
   -- true: show an empty string, with length equal to spinner frames.
   -- false: equals to "".
-  -- or string values
-  --
-  -- eg: show ✔ when lsp progress finished.
+  -- or string value, eg: show ✔ when lsp progress finished.
+  -- or a table value, eg: { init = "", stopped = "" }
   placeholder = false,
 
-  -- Highlight group for text, `Spinner` use fg of `Comment` by default.
+  -- Highlight group for text, use fg of `Comment` by default.
+  -- or be a table { init = "", running = "", paused = "", stopped = "" }
   hl_group = "Spinner",
 
   cursor_spinner = {
@@ -371,9 +370,6 @@ local row, col
 require("spinner").config("cursor", {
   kind = "cursor",
 
-  -- highlight group for text, use fg of `Comment` by default.
-  hl_group = "Spinner", -- optional
-
   -- CursorSpinner window option.
   winblend = 60, -- optional
 
@@ -418,7 +414,6 @@ require("spinner").config(id, {
   col = col, -- must be provided, which col, 0-based
 
   ns = 0, -- namespace, optional
-  hl_group = "Spinner" -- hl_group for text, optional
   virt_text_pos = "eol" -- options for `vim.api.nvim_buf_set_extmark`, optional
   virt_text_win_col = nil -- options for `vim.api.nvim_buf_set_extmarks`, optional
 })
@@ -446,9 +441,17 @@ Configure a `cmdline` spinner with id `my_spinner`.
 ```lua
 require("spinner").config("my_spinner", {
   kind = "cmdline"
-  hl_group = "Spinner" -- hl_group for text, optional
+
+  fmt = function(event)
+    local text = event.text
+    return text .. " Loading .."
+  end
 })
 ```
+
+A preview
+
+<img src="https://github.com/user-attachments/assets/7905781b-6903-4a07-8a27-428948a16a2a" width="560" />
 
 ## Window Title
 
@@ -462,7 +465,6 @@ require("spinner").config(id, {
   win = win, -- target win, must provided
 
   pos = "center", -- optional, can be "left", "center", "right", default is "center"
-  hl_group = "", -- optional, set hl_group for text
 
   -- optional, use fmt function to add extra text.
   fmt = function(event)
@@ -490,7 +492,6 @@ require("spinner").config(id, {
   win = win, -- target win, must provided
 
   pos = "center", -- optional, can be "left", "center", "right", default is "center"
-  hl_group = "", -- optional, set hl_group for text
 
   -- optional, use fmt function to add extra text.
   fmt = function(event)
@@ -529,6 +530,7 @@ require("spinner").config(id, {
   on_update_ui = function(event)
     local status = event.status -- current status
     local text = event.text -- current text (including placeholder)
+    local hl_group = event.hl_group -- current hl_group if provided
 
     -- do what you want
   end,
@@ -646,7 +648,7 @@ require("spinner").config("my_spinner", {
 
 ## Placeholder
 
-Set a default string to display when the spinner is idle.
+Set a default string to display when the spinner is idle (init/stopped).
 
 `spinner.nvim` render spinner as an empty string with length == `len(frame)`,
 you can set `placeholder = false` to disable this features. (will show a zero
@@ -656,12 +658,27 @@ length empty string when spinner is idle)
 require("spinner").config("my_spinner", {
   kind = "statusline",
 
-  -- eg: show ✔ when lsp progress finished.
+  -- eg: show ✔ when lsp progress is ready.
   placeholder = "✔",
 })
 ```
 
-> cmdline spinner do not support (and needed) placeholder
+> cursor spinner do not support placeholder since it's meaningless.
+
+You can also set it to a `table` to control the placeholder displayed during
+initialization and stop of the spinner.
+
+```lua
+require("spinner").config("my_spinner", {
+  kind = "statusline"
+
+  -- eg: show ✔ when lsp progress is ready.
+  placeholder = {
+    init = " ", -- show empty if lsp not started.
+    stopped = "✔", -- show ✔ when lsp is ready.
+  },
+})
+```
 
 ## Formatting
 
@@ -697,6 +714,24 @@ require("spinner").setup({
   hl_group = "Spinner",
 })
 ```
+
+You can set it to a table to display different colors for different spinner states.
+
+```lua
+require("spinner").config("my_spinner", {
+  kind = "statusline",
+  hl_group = {
+    init = "", -- after spinner config
+    running = "",
+    paused = "",
+    stopped = "",
+  }
+})
+```
+
+eg: show a gree ✔ to indicate lsp is ready.
+
+<img src="https://github.com/user-attachments/assets/67db88df-5dd4-4406-8ee0-abf0349730d7" width="560" />
 
 > statusline / tabline / winbar will wrap text in format `%#HL_GROUP#...%*` and
 > requires explicit setting in `config()` rather then `setup()` for backward
@@ -764,11 +799,15 @@ With tab completion for spinner IDs.
 ---@field pattern? string|spinner.Pattern -- Animation pattern
 ---@field ttl_ms? integer -- Time to live in ms
 ---@field initial_delay_ms? integer -- Initial delay in ms
----@field placeholder? string|boolean -- Placeholder text
+---@field placeholder? string|boolean|spinner.Placeholder -- Placeholder text
 ---@field attach? spinner.Event -- Event attachment
 ---@field on_update_ui? fun(event: spinner.OnChangeEvent) -- UI update callback
 ---@field ui_scope? string custom ui_scope, used to improve UI refresh performance
 ---@field fmt? fun(event: spinner.OnChangeEvent): string -- Format function
+---
+---@class spinner.Placeholder
+---@field init? string -- when status == init (new create)
+---@field stopped? string -- when status == stopped
 ---
 ---@class spinner.StatuslineOpts: spinner.CoreOpts
 ---@field kind "statusline" -- Statusline kind
@@ -781,11 +820,17 @@ With tab completion for spinner IDs.
 ---
 ---@class spinner.CursorOpts: spinner.CoreOpts
 ---@field kind "cursor" -- Cursor kind
----@field hl_group? string -- Highlight group
+---@field hl_group? string|spinner.HighlightGroup
 ---@field row? integer -- Position relative to cursor
 ---@field col? integer -- Position relative to cursor
 ---@field zindex? integer -- Z-index
 ---@field winblend? integer -- Window blend
+---
+---@class spinner.HighlightGroup
+---@field init? string -- used in init status
+---@field running? string -- used in running status
+---@field paused? string -- used in paused status
+---@field stopped? string -- used in stopped status
 ---
 ---@class spinner.ExtmarkOpts: spinner.CoreOpts
 ---@field kind "extmark" -- Extmark kind
@@ -793,7 +838,6 @@ With tab completion for spinner IDs.
 ---@field row integer -- Line position 0-based
 ---@field col integer -- Column position 0-based
 ---@field ns? integer -- Namespace
----@field hl_group? string -- Highlight group
 ---@field virt_text_pos? string -- options for vim.api.nvim_buf_set_extmark
 ---@field virt_text_win_col? integer -- options for `vim.api.nvim_buf_set_extmarks`
 ---
@@ -801,13 +845,11 @@ With tab completion for spinner IDs.
 ---@field kind "window-title"
 ---@field win integer -- target win id
 ---@field pos? string -- position, can be on of "left", "center" or "right"
----@field hl_group? string -- hl_group for text
 ---
 ---@class spinner.WindowFooterOpts: spinner.CoreOpts
 ---@field kind "window-footer"
 ---@field win integer -- target win id
 ---@field pos? string -- position, can be on of "left", "center" or "right"
----@field hl_group? string -- hl_group for text
 ---
 ---@class spinner.CmdlineOpts: spinner.CoreOpts
 ---@field kind "cmdline" -- CommandLine kind
@@ -823,6 +865,7 @@ With tab completion for spinner IDs.
 
 ---@enum spinner.Status
 local STATUS = {
+  INIT = "init", -- Initialized but not started status
   DELAYED = "delayed", -- Delayed status
   RUNNING = "running", -- Running status
   PAUSED = "paused", -- Paused status
@@ -901,12 +944,11 @@ local STATUS = {
 ---@field pattern? string|spinner.Pattern -- Default pattern
 ---@field ttl_ms? integer -- Default TTL
 ---@field initial_delay_ms? integer -- Default delay
----@field placeholder? string|boolean -- Default placeholder
----@field hl_group? string
+---@field placeholder? string|boolean|spinner.Placeholder -- Placeholder text
+---@field hl_group? string|spinner.HighlightGroup
 ---@field cursor_spinner? spinner.CursorSpinnerConfig -- Default cursor config
 ---
 ---@class spinner.CursorSpinnerConfig
----@field hl_group? string -- Default highlight group
 ---@field winblend? integer -- Default window blend
 ---@field zindex? integer -- Default z-index
 ---@field row? integer -- Default row offset 0-based
