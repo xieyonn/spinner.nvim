@@ -61,40 +61,34 @@ Neovim's UI components do **NOT** refresh automatically.
 
 So there are 2 ways to make the spinner animate:
 
-- Insert a function into the UI component. It renders the spinner text on UI
-  refresh, then refreshes this UI component at regular intervals. eg:
-  statusline/tabline/winbar spinner.
-- Periodically call the API to set the text content of the UI component. eg:
-  cursor/extmark spinner.
+- **Passive Refresh**: Insert a function into the UI component, then refreshes
+  this UI component at regular intervals. eg: statusline/tabline/winbar spinner.
+- **Active Refresh**: Periodically call the API to update the text content of
+  the UI component. eg: cursor/extmark spinner.
 
 `spinner.nvim` manages the internal state of the spinner and determines when to
 refresh the UI. Each spinner is identified by a unique `id`, with option `kind`
 to indicate how `spinner.nvim` refresh the UI.
 
-| kind          | refresh method                                                         |
-| ------------- | ---------------------------------------------------------------------- |
-| statusline    | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ statusline = true}) |
-| tabline       | vim.cmd("redrawtabline) or vim.api.nvim\_\_redraw({ tabline = true})   |
-| winbar        | vim.cmd("redrawstatus) or vim.api.nvim\_\_redraw({ winbar = true})     |
-| extmark       | vim.api.nvim_buf_set_extmarks()                                        |
-| cursor        | vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines()                 |
-| cmdline       | vim.cmd("echo 'text'")                                                 |
-| window-title  | vim.api.nvim_win_set_config()                                          |
-| window-footer | vim.api.nvim_win_set_config()                                          |
-| custom        | you tell how, see [Extend](#extend)                                    |
-
-Control spinners via lua api:
+| kind          | type     | refresh method                                         |
+| ------------- | -------- | ------------------------------------------------------ |
+| statusline    | passive  | vim.cmd("redrawstatus)                                 |
+| tabline       | passive  | vim.cmd("redrawtabline)                                |
+| winbar        | passive  | vim.cmd("redrawstatus)                                 |
+| extmark       | active   | vim.api.nvim_buf_set_extmarks()                        |
+| cursor        | active   | vim.api.nvim_win_open() + vim.api.nvim_buf_set_lines() |
+| cmdline       | active   | vim.cmd("echo 'text'")                                 |
+| window-title  | active   | vim.api.nvim_win_set_config()                          |
+| window-footer | active   | vim.api.nvim_win_set_config()                          |
+| custom        | you tell | you tell how, see [Extend](#extend)                    |
 
 ```lua
 local spinner = require("spinner")
 
--- 1. Setup a spinner with a unique id.
+-- Setup a spinner with a unique id.
 spinner.config("id", opts)
 
--- 2. Set up spinner content in the desired location with `render()`.
-local text = spinner.render("id")
-
--- 3. Control spinner as need.
+-- Control spinner as need.
 spinner.start("id") -- Start a spinner
 spinner.stop("id") -- Stop a spinner
 spinner.pause("id") -- Pause a spinner
@@ -899,6 +893,7 @@ With tab completion for spinner IDs.
 ---@field initial_delay_ms? integer -- Initial delay in ms
 ---@field placeholder? string|boolean|spinner.Placeholder -- Placeholder text
 ---@field attach? spinner.Event -- Event attachment
+---@field hl_group? string|spinner.HighlightGroup
 ---@field on_update_ui? fun(event: spinner.OnChangeEvent) -- UI update callback
 ---@field ui_scope? string custom ui_scope, used to improve UI refresh performance
 ---@field fmt? fun(event: spinner.OnChangeEvent): string -- Format function
@@ -918,7 +913,6 @@ With tab completion for spinner IDs.
 ---
 ---@class spinner.CursorOpts: spinner.CoreOpts
 ---@field kind "cursor" -- Cursor kind
----@field hl_group? string|spinner.HighlightGroup
 ---@field row? integer -- Position relative to cursor
 ---@field col? integer -- Position relative to cursor
 ---@field zindex? integer -- Z-index

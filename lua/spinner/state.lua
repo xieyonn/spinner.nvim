@@ -81,6 +81,7 @@ local STATUS = require("spinner.status")
 ---@field initial_delay_ms? integer -- Initial delay in ms
 ---@field placeholder? string|boolean|spinner.Placeholder -- Placeholder text
 ---@field attach? spinner.Event -- Event attachment
+---@field hl_group? string|spinner.HighlightGroup -- Highlight group
 ---@field on_update_ui? fun(event: spinner.OnChangeEvent) -- UI update callback
 ---@field ui_scope? string custom ui_scope, used to improve UI refresh performance
 ---@field fmt? fun(event: spinner.OnChangeEvent): string -- Format function
@@ -102,7 +103,6 @@ local STATUS = require("spinner.status")
 ---@field kind "cursor" -- Cursor kind
 ---@field row? integer -- Position relative to cursor
 ---@field col? integer -- Position relative to cursor
----@field hl_group? string|spinner.HighlightGroup -- Highlight group
 ---@field zindex? integer -- Z-index
 ---@field winblend? integer -- Window blend
 ---
