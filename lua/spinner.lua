@@ -47,10 +47,4 @@ function M.render(id)
   return engine:render(id)
 end
 
----Reset spinner.
----@param id string spinner id.
-function M.reset(id)
-  engine:reset(id)
-end
-
 return M

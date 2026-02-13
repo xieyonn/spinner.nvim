@@ -96,7 +96,6 @@ local text = spinner.render("id")
 spinner.start("id") -- Start a spinner
 spinner.stop("id") -- Stop a spinner
 spinner.pause("id") -- Pause a spinner
-spinner.reset("id") -- Reset a spinner
 ```
 
 ## Installation
@@ -746,7 +745,6 @@ eg: show a gree ✔ to indicate lsp is ready.
 :Spinner start my_spinner    " Start a spinner
 :Spinner stop my_spinner     " Stop a spinner
 :Spinner pause my_spinner    " Pause a spinner
-:Spinner reset my_spinner    " Reset a spinner
 ```
 
 With tab completion for spinner IDs.
@@ -765,7 +763,6 @@ With tab completion for spinner IDs.
 ---@field pause fun(id: string) -- Pause spinner.
 ---@field config fun(id: string, opts?: spinner.Opts) -- Setup spinner.
 ---@field render fun(id: string): string -- Render spinner.
----@field reset fun(id: string) -- Reset spinner.
 ---@field setup fun(opts?: spinner.Config) -- Setup global configuration.
 
 ---@alias spinner.UIScope -- Used to combine UI updates.
