@@ -129,13 +129,5 @@ function M:render(id)
   return state:render()
 end
 
----Reset spinner.
----@param id string
-function M:reset(id)
-  local state = self.state_map[id]
-  state:reset()
-  self:update_ui(state)
-end
-
 -- Return the class itself, instantiation happens externally
 return M

@@ -2,15 +2,13 @@
 local M = {}
 local utils = require("spinner.utils")
 
-local subcmds = { "start", "stop", "pause", "reset" }
-
 -- Completion function for Spinner command
 ---@param engine spinner.Engine
 ---@return spinner.VimCompFn comp_fun
 local function spinner_completion(engine)
   return utils.create_comp(function(ctx)
     if ctx.prev == "Spinner" then
-      return subcmds
+      return { "start", "stop", "pause" }
     end
 
     local ids = {} ---@type string[]
@@ -41,8 +39,7 @@ local function spinner_cmd(engine)
   vim.api.nvim_create_user_command("Spinner", function(opts)
     if vim.tbl_isempty(opts.fargs) then
       vim.notify(
-        "[spinner.nvim]: Missing subcommand. Use one of: "
-          .. table.concat(subcmds, ", "),
+        "[spinner.nvim]: Missing subcommand. Use one of: start, stop, pause",
         vim.log.levels.WARN
       )
       return
@@ -54,37 +51,34 @@ local function spinner_cmd(engine)
     -- Deduplicate spinner IDs while preserving order
     local unique_spinner_ids = utils.deduplicate_list(spinner_ids)
 
-    for _, id in ipairs(unique_spinner_ids) do
-      if not rawget(engine.state_map, id) then
+    for _, spinner_id in ipairs(unique_spinner_ids) do
+      if not rawget(engine.state_map, spinner_id) then
         vim.notify(
-          ("[spinner.nvim]: spinner %s not setup yet"):format(id),
+          ("[spinner.nvim]: spinner %s not setup yet"):format(spinner_id),
           vim.log.levels.WARN
         )
         -- Continue to next spinner instead of returning
-      elseif not vim.list_contains(subcmds) then
+      elseif not vim.list_contains({ "start", "stop", "pause" }, subcmd) then
         vim.notify(
           "[spinner.nvim]: Unknown subcommand '"
             .. subcmd
-            .. "'. Use one of: "
-            .. table.concat(subcmds, ", "),
+            .. "'. Use one of: start, stop, pause",
           vim.log.levels.WARN
         )
         return
       end
 
       if subcmd == "start" then
-        engine:start(id)
+        engine:start(spinner_id)
       elseif subcmd == "stop" then
-        engine:stop(id, true)
+        engine:stop(spinner_id, true)
       elseif subcmd == "pause" then
-        engine:pause(id)
-      elseif subcmd == "reset" then
-        engine:reset(id)
+        engine:pause(spinner_id)
       end
     end
   end, {
     nargs = "+",
-    desc = ("Control spinners (%s)"):format(table.concat(subcmds, ", ")),
+    desc = "Control spinners (start, stop, pause)",
     complete = spinner_completion(engine),
     force = true,
   })
