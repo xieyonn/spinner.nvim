@@ -211,5 +211,25 @@ describe("scheduler", function()
     assert.stub(vim.notify).called(1)
     ---@diagnostic disable-next-line
     vim.notify:revert()
+    ---@diagnostic disable-next-line
+    uv.new_timer:revert()
+  end)
+
+  it("shoud schedule if we have new task fater try_stop #id", function()
+    local f = spy.new()
+    s:schedule(function()
+      f()
+    end)
+    tick()
+    assert.spy(f).was.called(1)
+
+    s:schedule(function()
+      f()
+    end)
+
+    tick() -- will call try_stop
+    tick() -- will schedule new task
+
+    assert.spy(f).was.called(2)
   end)
 end)

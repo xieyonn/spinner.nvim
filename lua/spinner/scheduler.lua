@@ -49,9 +49,10 @@ function M:_try_stop()
         self.timer:stop()
         self.timer:close()
         self.timer = nil
-      else
-        self:_schedule_next()
+        return
       end
+
+      self:_schedule_next(utils.now_ms())
     end)
   )
 end
@@ -94,26 +95,27 @@ end
 ---Schedule the next timer based on the heap top task. If the heap is empty,
 ---attempt to stop the timer.
 ---@private
-function M:_schedule_next()
+---@param now_ms integer
+function M:_schedule_next(now_ms)
   if self.tasks:is_empty() then
     self:_try_stop()
     return
   end
 
   local task = self.tasks:peek() --[[@as spinner.SchedulerTask]]
-  self:_start_timer(math.max(SCHEDULE_WINDOW_MS, task.at - utils.now_ms()))
+  self:_start_timer(math.max(SCHEDULE_WINDOW_MS, task.at - now_ms))
 end
 
 ---Executes all tasks ready within SCHEDULE_WINDOW_MS, If a task returns a
 ---number, it is rescheduled as a periodic task.
 ---@private
 function M:_tick()
-  local now = utils.now_ms()
+  local now_ms = utils.now_ms()
   local ready = {} ---@type spinner.SchedulerTask[]
 
   while not self.tasks:is_empty() do
     local task = self.tasks:peek() --[[@as spinner.SchedulerTask]]
-    if task.at - now > SCHEDULE_WINDOW_MS then
+    if task.at - now_ms > SCHEDULE_WINDOW_MS then
       break
     end
 
@@ -124,21 +126,21 @@ function M:_tick()
   for _, task in ipairs(ready) do
     local ok, next_interval = pcall(task.job)
     if ok and type(next_interval) == "number" and next_interval > 0 then
-      task.at = now + next_interval
+      task.at = now_ms + next_interval
       self.tasks:push(task)
     end
   end
 
-  self:_schedule_next()
+  self:_schedule_next(now_ms)
 end
 
 ---schedule {job} to be invoked at absolute time {at} (ms)
 ---@param job spinner.SchedulerJob
 ---@param at? integer
 function M:schedule(job, at)
-  local now = utils.now_ms()
-  at = at or now
-  at = math.max(at, now + SCHEDULE_WINDOW_MS)
+  local now_ms = utils.now_ms()
+  at = at or now_ms
+  at = math.max(at, now_ms + SCHEDULE_WINDOW_MS)
 
   local task = { job = job, at = at }
   self.tasks:push(task)
@@ -149,7 +151,7 @@ function M:schedule(job, at)
   end
 
   -- cut in - this task is now the earliest in the heap
-  self:_schedule_next()
+  self:_schedule_next(now_ms)
 end
 
 return M
