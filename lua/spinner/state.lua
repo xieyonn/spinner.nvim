@@ -553,12 +553,6 @@ end
 ---@return boolean true if spinner needs UI refresh, false if no refresh needed
 function M:stop(force)
   if force == true then
-    if STATUS.INIT == self.status then
-      -- INIT -> STOPPED, need refresh ui
-      do_stop(self)
-      return true, true
-    end
-
     if self.status == STATUS.STOPPED then
       -- Already stopped, no need refresh ui
       return true, false
