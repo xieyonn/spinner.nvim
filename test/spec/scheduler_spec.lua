@@ -201,7 +201,7 @@ describe("scheduler", function()
     assert.spy(f).called(5)
   end)
 
-  it("should notify error if fail to create timer #id", function()
+  it("should notify error if fail to create timer", function()
     stub(uv, "new_timer", nil)
     stub(vim, "notify")
 
@@ -215,7 +215,7 @@ describe("scheduler", function()
     uv.new_timer:revert()
   end)
 
-  it("shoud schedule if we have new task fater try_stop #id", function()
+  it("shoud schedule if we have new task fater try_stop", function()
     local f = spy.new()
     s:schedule(function()
       f()

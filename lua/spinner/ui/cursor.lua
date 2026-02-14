@@ -51,12 +51,14 @@ return function(state)
         noautocmd = true,
       })
 
-      local hl = state:get_hl_group() or "Spinner"
-      vim.api.nvim_set_option_value(
-        "winhighlight",
-        "Normal:" .. hl,
-        { win = win }
-      )
+      local hl = state:get_hl_group()
+      if hl then
+        vim.api.nvim_set_option_value(
+          "winhighlight",
+          "Normal:" .. hl,
+          { win = win }
+        )
+      end
       vim.api.nvim_set_option_value("winblend", opts.winblend, { win = win })
       return
     end

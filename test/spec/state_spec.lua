@@ -1238,6 +1238,33 @@ describe("state", function()
     eq("stopped", state:get_hl_group())
   end)
 
+  it("get_hl_group() shoud get global default hl_group by status", function()
+    local config = require("spinner.config")
+    local hl_group = {
+      init = "init",
+      paused = "paused",
+      running = "running",
+      stopped = "stopped",
+    }
+    config.setup({
+      hl_group = hl_group,
+    })
+    eq(config.global.hl_group, hl_group)
+
+    state = new("test-hlgroup", {
+      kind = "custom",
+      on_update_ui = function() end,
+    })
+
+    eq("init", state:get_hl_group())
+    state.status = STATUS.PAUSED
+    eq("paused", state:get_hl_group())
+    state.status = STATUS.RUNNING
+    eq("running", state:get_hl_group())
+    state.status = STATUS.STOPPED
+    eq("stopped", state:get_hl_group())
+  end)
+
   it("config() shoud error if hl_group is invalid", function()
     for _, key in ipairs({ "init", "paused", "running", "stopped" }) do
       assert.has_error(function()
