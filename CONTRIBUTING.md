@@ -19,7 +19,8 @@ You may need install:
 - Install `busted` `luacov`
 
 ```bash
-luarocks install busted luacov
+luarocks install busted
+luarocks install luacov
 ```
 
 Run all tests:
