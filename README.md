@@ -113,12 +113,18 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 }
 ```
 
+Using [rocks.nvim](https://github.com/lumen-oss/rocks.nvim)
+
+```vim
+:Rocks install spinner.nvim
+```
+
 ## Preview
 
 Type in command line:
 
 ```vim
-= require("spinner.demo").open()
+:= require("spinner.demo").open()
 ```
 
 Will open a window displaying all built-in spinners.
