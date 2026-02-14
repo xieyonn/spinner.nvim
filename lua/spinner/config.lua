@@ -95,18 +95,52 @@ local function validate_config(opts)
   vim.validate("opts.initial_delay_ms", opts.initial_delay_ms, function(x)
     return (type(x) == "number" and x >= 0)
   end, true, "initial_delay_ms must be a number >= 0")
-  vim.validate("opts.placeholder", opts.placeholder, function(x)
-    return x == nil or type(x) == "boolean" or type(x) == "string",
-      "placeholder must be a string or boolean"
-  end)
 
-  vim.validate(
-    "opts.hl_group",
-    opts.hl_group,
-    "string",
-    true,
-    "hl_group must be a string"
-  )
+  vim.validate("opts.placeholder", opts.placeholder, function(x)
+    local t = type(x)
+    if t == "string" then
+      return true
+    end
+    if t == "boolean" then
+      return true
+    end
+    if t == "table" then
+      if x.init and type(x.init) ~= "string" then
+        return false, "placeholder.init must be nil or string"
+      end
+      if x.stopped and type(x.stopped) ~= "string" then
+        return false, "placeholder.stopped must be nil or string"
+      end
+
+      return true
+    end
+    return false,
+      "placeholder must be a string or boolean or table with optional field init, stopped"
+  end, true)
+
+  vim.validate("opts.hl_group", opts.hl_group, function(x)
+    local t = type(x)
+    if t == "string" then
+      return true
+    end
+    if t == "table" then
+      if x.init and type(x.init) ~= "string" then
+        return false, "hl_group.init must be nil or string"
+      end
+      if x.paused and type(x.paused) ~= "string" then
+        return false, "hl_group.paused must be nil or string"
+      end
+      if x.running and type(x.running) ~= "string" then
+        return false, "hl_group.running must be nil or string"
+      end
+      if x.stopped and type(x.stopped) ~= "string" then
+        return false, "hl_group.stopped must be nil or string"
+      end
+      return true
+    end
+    return false,
+      "hl_group must be a string or table with optional field init, paused, running, stopped"
+  end, true)
 
   if opts.cursor_spinner then
     vim.validate(

@@ -53,12 +53,56 @@ describe("config", function()
     setup_check({ pattern = { interval = 10, frames = "abc" } })
     setup_check({ ttl_ms = -1 })
     setup_check({ initial_delay_ms = -1 })
-    setup_check({ placeholder = {} })
+    setup_check({ placeholder = 1 })
     setup_check({ placeholder = function() end })
+    setup_check({ placeholder = { init = 1 } })
+    setup_check({ placeholder = { stopped = 1 } })
     setup_check({ hl_group = 0 })
+    setup_check({ hl_group = { init = 1 } })
+    setup_check({ hl_group = { paused = 1 } })
+    setup_check({ hl_group = { running = 1 } })
+    setup_check({ hl_group = { stopped = 1 } })
     setup_check({ cursor_spinner = { winblend = "abc" } })
     setup_check({ cursor_spinner = { zindex = "abc" } })
     setup_check({ cursor_spinner = { row = "abc" } })
     setup_check({ cursor_spinner = { col = "abc" } })
+  end)
+
+  it("setup() can set placeholder with string", function()
+    local config = require("spinner.config")
+    local opts = {
+      placeholder = "abc",
+    }
+    config.setup(opts)
+
+    eq(opts.placeholder, config.global.placeholder)
+  end)
+
+  it("setup() can set hl_group with table", function()
+    local config = require("spinner.config")
+    local opts = {
+      hl_group = {
+        init = "init",
+        paused = "paused",
+        running = "running",
+        stopped = "stopped",
+      },
+    }
+    config.setup(opts)
+
+    eq(opts.hl_group, config.global.hl_group)
+  end)
+
+  it("setup() can set placeholder with table", function()
+    local config = require("spinner.config")
+    local opts = {
+      placeholder = {
+        init = "init",
+        stopped = "stopped",
+      },
+    }
+    config.setup(opts)
+
+    eq(opts.placeholder, config.global.placeholder)
   end)
 end)

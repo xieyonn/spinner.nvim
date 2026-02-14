@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  busted:
     runs-on: ubuntu-latest
 
     strategy:
