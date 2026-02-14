@@ -20,7 +20,14 @@
 --    RUNNING → PAUSED
 --    DELAYED → PAUSED
 --
--- 5. Automatic transitions:
+-- 5. Fail (fail()):
+--    RUNNING → FAILED
+--    DELAYED → FAILED
+--    PAUSED → FAILED
+--    INIT → FAILED
+--    STOPPED → FAILED
+--
+-- 6. Automatic transitions:
 --    DELAYED → RUNNING  (after initial_delay_ms expires in step())
 --    RUNNING → STOPPED  (when TTL expires in step())
 --
@@ -30,6 +37,7 @@
 -- - DELAYED: Initial delay before animation starts
 -- - RUNNING: Actively animating
 -- - PAUSED: Animation paused (can be resumed)
+-- - FAILED: Animation failed (can be restarted with start())
 --
 -- Active reference counting:
 -- - start() increments active count
@@ -89,6 +97,7 @@ local STATUS = require("spinner.status")
 ---@class spinner.Placeholder
 ---@field init? string -- when status == init (new create)
 ---@field stopped? string -- when status == stopped
+---@field failed? string -- when status == failed
 ---
 ---@class spinner.StatuslineOpts: spinner.CoreOpts
 ---@field kind "statusline" -- Statusline kind
@@ -111,6 +120,7 @@ local STATUS = require("spinner.status")
 ---@field running? string -- used in running status
 ---@field paused? string -- used in paused status
 ---@field stopped? string -- used in stopped status
+---@field failed? string -- used in failed status
 ---
 ---@class spinner.ExtmarkOpts: spinner.CoreOpts
 ---@field kind "extmark" -- Extmark kind
@@ -237,11 +247,14 @@ local function validate_opts(opts)
       if x.stopped and type(x.stopped) ~= "string" then
         return false, "placeholder.stopped must be nil or string"
       end
+      if x.failed and type(x.failed) ~= "string" then
+        return false, "placeholder.failed must be nil or string"
+      end
 
       return true
     end
     return false,
-      "placeholder must be a string or boolean or table with optional field init, stopped"
+      "placeholder must be a string or boolean or table with optional field init, stopped, failed"
   end, true)
 
   vim.validate("opts.hl_group", opts.hl_group, function(x)
@@ -262,10 +275,13 @@ local function validate_opts(opts)
       if x.stopped and type(x.stopped) ~= "string" then
         return false, "hl_group.stopped must be nil or string"
       end
+      if x.failed and type(x.failed) ~= "string" then
+        return false, "hl_group.failed must be nil or string"
+      end
       return true
     end
     return false,
-      "hl_group must be a string or table with optional field init, paused, running, stopped"
+      "hl_group must be a string or table with optional field init, paused, running, stopped, failed"
   end, true)
 
   if opts.kind == "cursor" then
@@ -407,6 +423,10 @@ function M:get_placeholder()
     if STATUS.STOPPED == self.status then
       return self.opts.placeholder.stopped or "" --[[@as string]]
     end
+
+    if STATUS.FAILED == self.status then
+      return self.opts.placeholder.failed or "" --[[@as string]]
+    end
   end
 
   return ""
@@ -436,6 +456,9 @@ function M:get_hl_group()
     if STATUS.STOPPED == self.status then
       return self.opts.hl_group.stopped
     end
+    if STATUS.FAILED == self.status then
+      return self.opts.hl_group.failed
+    end
   end
 
   return nil
@@ -457,6 +480,7 @@ function M:render()
     self.status == STATUS.DELAYED
     or self.status == STATUS.STOPPED
     or self.status == STATUS.INIT
+    or self.status == STATUS.FAILED
   then
     text = self:get_placeholder()
   else
@@ -525,12 +549,12 @@ function M:start()
   self.last_spin = 0
 
   if self.opts.initial_delay_ms > 0 then
-    -- INIT/STOPPED -> DELAYED
+    -- INIT/STOPPED/FAILED -> DELAYED
     self.status = STATUS.DELAYED
     return false, self.opts.initial_delay_ms
   end
 
-  -- INIT/STOPPED -> RUNNING
+  -- INIT/STOPPED/FAILED -> RUNNING
   self.status = STATUS.RUNNING
   return true, self.opts.pattern.interval
 end
@@ -553,8 +577,8 @@ end
 ---@return boolean true if spinner needs UI refresh, false if no refresh needed
 function M:stop(force)
   if force == true then
-    if self.status == STATUS.STOPPED then
-      -- Already stopped, no need refresh ui
+    if self.status == STATUS.STOPPED or self.status == STATUS.FAILED then
+      -- Already stopped or failed, no need refresh ui
       return true, false
     end
 
@@ -562,8 +586,8 @@ function M:stop(force)
     return true, true -- Fully stopped, need refresh ui
   end
 
-  if self.status == STATUS.STOPPED then
-    -- Already stopped, no need refresh ui
+  if self.status == STATUS.STOPPED or self.status == STATUS.FAILED then
+    -- Already stopped or failed, no need refresh ui
     return true, false
   end
 
@@ -596,6 +620,15 @@ function M:pause()
   end
 end
 
+---Set status to FAILED
+function M:fail()
+  self.started = false
+  self.active = 0
+  self.status = STATUS.FAILED
+  self.start_time = 0
+  self.last_spin = 0
+end
+
 ---Run on every schedule tick.
 ---@param now_ms integer
 ---@return boolean need_refresh_ui
@@ -611,8 +644,8 @@ function M:step(now_ms)
     return true, self.opts.pattern.interval
   end
 
-  --already stopped, no need refresh ui, no next schedule.
-  if STATUS.STOPPED == self.status then
+  --already stopped or failed, no need refresh ui, no next schedule.
+  if STATUS.STOPPED == self.status or STATUS.FAILED == self.status then
     return false, nil
   end
 

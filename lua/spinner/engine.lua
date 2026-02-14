@@ -137,5 +137,13 @@ function M:reset(id)
   self:update_ui(state)
 end
 
+---Fail spinner.
+---@param id string
+function M:fail(id)
+  local state = self.state_map[id]
+  state:fail()
+  self:update_ui(state)
+end
+
 -- Return the class itself, instantiation happens externally
 return M

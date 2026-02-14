@@ -383,6 +383,18 @@ describe("state", function()
     eq("hello", state:render())
   end)
 
+  it("render() should use placeholder.failed", function()
+    state = new("test-failed", {
+      placeholder = {
+        failed = "Failed!",
+      },
+    })
+
+    state:fail()
+    eq(STATUS.FAILED, state.status)
+    eq("Failed!", state:render())
+  end)
+
   it("render() PAUSE returns same string", function()
     state:start()
     state:pause()
@@ -394,7 +406,7 @@ describe("state", function()
   end)
 
   it("fsm invariants hold under arbitrary sequence", function()
-    local ops = { "start", "pause", "stop" }
+    local ops = { "start", "pause", "stop", "reset", "fail" }
 
     for _ = 1, 100 do
       local op = ops[math.random(1, #ops)]
@@ -410,6 +422,7 @@ describe("state", function()
           or state.status == STATUS.RUNNING
           or state.status == STATUS.PAUSED
           or state.status == STATUS.DELAYED
+          or state.status == STATUS.FAILED
       )
     end
   end)
@@ -1188,6 +1201,12 @@ describe("state", function()
         placeholder = { stopped = 1 },
       })
     end)
+
+    assert.has_error(function()
+      state:config({
+        placeholder = { failed = 1 },
+      })
+    end)
   end)
 
   it("get_hl_group() shoud get global hl_group by default", function()
@@ -1226,6 +1245,7 @@ describe("state", function()
         paused = "paused",
         running = "running",
         stopped = "stopped",
+        failed = "failed",
       },
       on_update_ui = function() end,
     })
@@ -1236,6 +1256,8 @@ describe("state", function()
     eq("running", state:get_hl_group())
     state.status = STATUS.STOPPED
     eq("stopped", state:get_hl_group())
+    state.status = STATUS.FAILED
+    eq("failed", state:get_hl_group())
   end)
 
   it("get_hl_group() shoud get global default hl_group by status", function()
@@ -1245,6 +1267,7 @@ describe("state", function()
       paused = "paused",
       running = "running",
       stopped = "stopped",
+      failed = "failed",
     }
     config.setup({
       hl_group = hl_group,
@@ -1263,10 +1286,12 @@ describe("state", function()
     eq("running", state:get_hl_group())
     state.status = STATUS.STOPPED
     eq("stopped", state:get_hl_group())
+    state.status = STATUS.FAILED
+    eq("failed", state:get_hl_group())
   end)
 
   it("config() shoud error if hl_group is invalid", function()
-    for _, key in ipairs({ "init", "paused", "running", "stopped" }) do
+    for _, key in ipairs({ "init", "paused", "running", "stopped", "failed" }) do
       assert.has_error(function()
         local hl = {}
         hl[key] = 1
@@ -1301,5 +1326,61 @@ describe("state", function()
     eq(STATUS.INIT, state.status)
     eq(0, state.start_time)
     eq(0, state.last_spin)
+  end)
+
+  it("fail() should fail state status", function()
+    state = new("test-failed", { pattern = "dots" })
+
+    state:fail()
+
+    eq(STATUS.FAILED, state.status)
+    eq(false, state.started)
+    eq(0, state.active)
+    eq(0, state.start_time)
+    eq(0, state.last_spin)
+  end)
+
+  it("should not process in step() when in FAILED state", function()
+    state = new("test-failed", { pattern = "dots" })
+
+    state:fail()
+    local need_refresh, next_time = state:step(1000)
+
+    eq(false, need_refresh)
+    eq(nil, next_time)
+  end)
+
+  it("should allow restart from FAILED state", function()
+    state = new("test-failed", { pattern = "dots" })
+
+    state:fail()
+    eq(STATUS.FAILED, state.status)
+
+    local need_refresh, next_time = state:start()
+
+    eq(true, need_refresh)
+    eq(true, next_time ~= nil)
+    eq(true, state.status == STATUS.RUNNING)
+  end)
+
+  it("should handle stop() when in FAILED state", function()
+    state = new("test-failed", { pattern = "dots" })
+
+    state:fail()
+    local was_fully_stopped, needs_ui_refresh = state:stop()
+
+    -- Should remain stopped and not need UI refresh since it was already in terminal state
+    eq(true, was_fully_stopped)
+    eq(false, needs_ui_refresh)
+  end)
+
+  it("should handle force stop when in FAILED state", function()
+    state = new("test-failed", { pattern = "dots" })
+
+    state:fail()
+    local was_fully_stopped, needs_ui_refresh = state:stop(true)
+
+    eq(true, was_fully_stopped)
+    eq(false, needs_ui_refresh)
   end)
 end)

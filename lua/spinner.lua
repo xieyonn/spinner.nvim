@@ -53,4 +53,10 @@ function M.reset(id)
   engine:reset(id)
 end
 
+---Fail spinner, stop & mark status as failed.
+---@param id string spinner id.
+function M.fail(id)
+  engine:fail(id)
+end
+
 return M

@@ -3,8 +3,8 @@
 Extensible spinner framework for Neovim plugins and UI.
 
 [![coverage](https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main&logo=codecov)](https://codecov.io/gh/xieyonn/spinner.nvim)
-[![release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim?logo=github&color=81a2be)](https://github.com/xieyonn/spinner.nvim/releases/latest)
-[![LuaRocks](https://img.shields.io/luarocks/v/xieyonn/spinner.nvim?logo=lua&color=81a2be)](https://luarocks.org/modules/xieyonn/spinner.nvim)
+[![release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim?logo=github)](https://github.com/xieyonn/spinner.nvim/releases/latest)
+[![LuaRocks](https://img.shields.io/luarocks/v/xieyonn/spinner.nvim?logo=lua)](https://luarocks.org/modules/xieyonn/spinner.nvim)
 [![Requires Neovim 0.11+](https://img.shields.io/badge/requires-nvim%200.11%2B-9cf?logo=neovim)](https://neovim.io/)
 [![license](https://img.shields.io/github/license/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/blob/main/LICENSE)
 
@@ -94,6 +94,7 @@ spinner.start("id") -- Start a spinner
 spinner.stop("id") -- Stop a spinner
 spinner.pause("id") -- Pause a spinner
 spinner.reset("id") -- Reset a spinner
+spinner.fail("id") -- Fail a spinner (stop & mark as failed)
 ```
 
 ## Installation
@@ -155,11 +156,11 @@ require("spinner").setup({
   -- true: show an empty string, with length equal to spinner frames.
   -- false: equals to "".
   -- or string value, eg: show ✔ when lsp progress finished.
-  -- or a table value, eg: { init = "", stopped = "" }
+  -- or a table value, eg: { init = "", stopped = "", failed = "" }
   placeholder = false,
 
   -- Highlight group for text, use fg of `Comment` by default.
-  -- or be a table { init = "", running = "", paused = "", stopped = "" }
+  -- or be a table { init = "", running = "", paused = "", stopped = "", failed = ""}
   hl_group = "Spinner",
 
   cursor_spinner = {
@@ -236,7 +237,7 @@ end
 3. setup statusline
 
 ```lua
-vim.o.statusline = vim.o.statusline .. "%!v:lua.lsp_progress()"
+vim.o.statusline = vim.o.statusline .. "%{v:lua.lsp_progress()%}"
 ```
 
 4. setup a `cursor` spinner with id `cursor` and attach to `LspRequest`
@@ -363,7 +364,7 @@ function my_spinner()
   return require("spinner").render("my_spinner")
 end
 
-vim.o.statusline = vim.o.statusline .. "%!v:lua.my_spinner()"
+vim.o.statusline = vim.o.statusline .. "%{v:lua.my_spinner()%}"
 ```
 
 3. Start/stop/pause the spinner where needed.
@@ -421,7 +422,7 @@ function my_spinner()
   return require("spinner").render("my_spinner")
 end
 
-vim.o.tabline = vim.o.tabline .. "%!v:lua.my_spinner()"
+vim.o.tabline = vim.o.tabline .. "%{v:lua.my_spinner()%}"
 ```
 
 > spinner.nvim use `vim.cmd("redrawtabline")` to refresh tabline.
@@ -446,7 +447,7 @@ function my_spinner()
   return require("spinner").render("my_spinner")
 end
 
-vim.o.winbar = vim.o.winbar .. "%!v:lua.my_spinner()"
+vim.o.winbar = vim.o.winbar .. "%{v:lua.my_spinner()%}"
 ```
 
 > spinner.nvim use `vim.cmd("redrawstatus")` to refresh winbar.
@@ -611,9 +612,10 @@ Extend a spinner using the `on_update_ui` option, which is a `function` that
 gets called **every** time the UI needs to be refreshed, including:
 
 - init: when config/reset
-- running: when spinning
+- running: When spinning
 - pause: When paused
-- stop: When stopping
+- stop: When stopped
+- fail: When failed
 
 > if spinner has initial_delay_ms option, only refresh ui when timeout expires.
 
@@ -768,8 +770,9 @@ require("spinner").config("my_spinner", {
 
   -- eg: show ✔ when lsp progress is ready.
   placeholder = {
-    init = " ", -- show empty if lsp not started.
-    stopped = "✔", -- show ✔ when lsp is ready.
+    init = " ", -- show empty if not started.
+    stopped = "✔", -- show ✔ when success.
+    failed = "✗" -- show ✗ when failed.
   },
 })
 ```
@@ -784,13 +787,15 @@ require("spinner").config("my_spinner", {
   kind = "statusline",
   fmt = function(event)
     local text = event.text
-    local status = event.status
+    -- local status = event.status
+    -- local hl_group = event.hl_group
     return "[" .. text .. "]"
   end
 })
 ```
 
-> highlight only apply to spinner text
+> event.text will contains hl_group ONLY in statusline/tabline/winbar/cmdline spinner.
+> You are free to add other hl_group for text in other spinners.
 
 ## Highlight
 
@@ -818,9 +823,10 @@ require("spinner").config("my_spinner", {
   kind = "statusline",
   hl_group = {
     init = "", -- after spinner config
-    running = "",
-    paused = "",
-    stopped = "",
+    running = "", -- running
+    paused = "", -- paused
+    stopped = "", -- stopped
+    failed = "", -- failed
   }
 })
 ```
@@ -842,6 +848,7 @@ eg: show a gree ✔ to indicate lsp is ready.
 :Spinner stop my_spinner     " Stop a spinner
 :Spinner pause my_spinner    " Pause a spinner
 :Spinner reset my_spinner    " Reset a spinner
+:Spinner fail my_spinner     " Fail a spinner
 ```
 
 With tab completion for spinner IDs.
@@ -861,6 +868,7 @@ With tab completion for spinner IDs.
 ---@field config fun(id: string, opts?: spinner.Opts) -- Setup spinner.
 ---@field render fun(id: string): string -- Render spinner.
 ---@field reset fun(id: string) -- Reset spinner.
+---@field fail fun(id: string) -- Fail spinner, stop & mark status as failed.
 ---@field setup fun(opts?: spinner.Config) -- Setup global configuration.
 
 ---@alias spinner.UIScope -- Used to combine UI updates.
@@ -907,6 +915,7 @@ With tab completion for spinner IDs.
 ---@class spinner.Placeholder
 ---@field init? string -- when status == init (new create)
 ---@field stopped? string -- when status == stopped
+---@field failed? string -- when status == failed
 ---
 ---@class spinner.StatuslineOpts: spinner.CoreOpts
 ---@field kind "statusline" -- Statusline kind
@@ -929,6 +938,7 @@ With tab completion for spinner IDs.
 ---@field running? string -- used in running status
 ---@field paused? string -- used in paused status
 ---@field stopped? string -- used in stopped status
+---@field failed? string -- used in failed status
 ---
 ---@class spinner.ExtmarkOpts: spinner.CoreOpts
 ---@field kind "extmark" -- Extmark kind
@@ -960,6 +970,7 @@ With tab completion for spinner IDs.
 ---@class spinner.OnChangeEvent
 ---@field status spinner.Status -- Current status
 ---@field text string -- Current text
+---@field hl_group? string -- Current hl_group
 
 ---@enum spinner.Status
 local STATUS = {
@@ -968,6 +979,7 @@ local STATUS = {
   RUNNING = "running", -- Running status
   PAUSED = "paused", -- Paused status
   STOPPED = "stopped", -- Stopped status
+  FAILED = "failed", -- Failed state
 }
 
 ---@class spinner.Pattern

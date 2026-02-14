@@ -20,6 +20,7 @@ return function(state)
       STATUS.STOPPED == state.status
       or STATUS.INIT == state.status
       or STATUS.DELAYED == state.status
+      or STATUS.FAILED == state.status
     then
       close()
       return

@@ -33,11 +33,11 @@ local default_config = {
   -- true: show an empty string, with length equal to spinner frames.
   -- false: equals to "".
   -- or string value, eg: show ✔ when lsp progress finished.
-  -- or a table value, eg: { init = "", stopped = "" }
+  -- or a table value, eg: { init = "", stopped = "", failed = "" }
   placeholder = false,
 
   -- Highlight group for text, use fg of `Comment` by default.
-  -- or be a table { init = "", running = "", paused = "", stopped = "" }
+  -- or be a table { init = "", running = "", paused = "", stopped = "", failed = ""}
   hl_group = "Spinner",
 
   cursor_spinner = {
@@ -111,11 +111,14 @@ local function validate_config(opts)
       if x.stopped and type(x.stopped) ~= "string" then
         return false, "placeholder.stopped must be nil or string"
       end
+      if x.failed and type(x.failed) ~= "string" then
+        return false, "placeholder.failed must be nil or string"
+      end
 
       return true
     end
     return false,
-      "placeholder must be a string or boolean or table with optional field init, stopped"
+      "placeholder must be a string or boolean or table with optional field init, stopped, failed"
   end, true)
 
   vim.validate("opts.hl_group", opts.hl_group, function(x)
@@ -136,10 +139,13 @@ local function validate_config(opts)
       if x.stopped and type(x.stopped) ~= "string" then
         return false, "hl_group.stopped must be nil or string"
       end
+      if x.failed and type(x.failed) ~= "string" then
+        return false, "hl_group.failed must be nil or string"
+      end
       return true
     end
     return false,
-      "hl_group must be a string or table with optional field init, paused, running, stopped"
+      "hl_group must be a string or table with optional field init, paused, running, stopped, failed"
   end, true)
 
   if opts.cursor_spinner then

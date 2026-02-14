@@ -57,11 +57,13 @@ describe("config", function()
     setup_check({ placeholder = function() end })
     setup_check({ placeholder = { init = 1 } })
     setup_check({ placeholder = { stopped = 1 } })
+    setup_check({ placeholder = { failed = 1 } })
     setup_check({ hl_group = 0 })
     setup_check({ hl_group = { init = 1 } })
     setup_check({ hl_group = { paused = 1 } })
     setup_check({ hl_group = { running = 1 } })
     setup_check({ hl_group = { stopped = 1 } })
+    setup_check({ hl_group = { failed = 1 } })
     setup_check({ cursor_spinner = { winblend = "abc" } })
     setup_check({ cursor_spinner = { zindex = "abc" } })
     setup_check({ cursor_spinner = { row = "abc" } })
@@ -86,6 +88,7 @@ describe("config", function()
         paused = "paused",
         running = "running",
         stopped = "stopped",
+        failed = "failed",
       },
     }
     config.setup(opts)
@@ -99,6 +102,7 @@ describe("config", function()
       placeholder = {
         init = "init",
         stopped = "stopped",
+        failed = "failed",
       },
     }
     config.setup(opts)

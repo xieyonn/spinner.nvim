@@ -29,6 +29,7 @@ describe("engine", function()
       end,
       config = spy.new(function() end),
       reset = function() end,
+      fail = function() end,
     }
 
     local dummy_scheduler = { schedule = function() end }
@@ -352,6 +353,12 @@ describe("engine", function()
   it("shoud refresh ui when call reset", function()
     spy.on(engine, "update_ui")
     engine:reset("test_id")
+    assert.spy(engine.update_ui).was.called(1)
+  end)
+
+  it("shoud refresh ui when call fail", function()
+    spy.on(engine, "update_ui")
+    engine:fail("test_id")
     assert.spy(engine.update_ui).was.called(1)
   end)
 end)

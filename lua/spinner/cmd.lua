@@ -2,7 +2,7 @@
 local M = {}
 local utils = require("spinner.utils")
 
-local subcmds = { "start", "stop", "pause", "reset" }
+local subcmds = { "start", "stop", "pause", "reset", "fail" }
 
 -- Completion function for Spinner command
 ---@param engine spinner.Engine
@@ -80,6 +80,8 @@ local function spinner_cmd(engine)
         engine:pause(id)
       elseif subcmd == "reset" then
         engine:reset(id)
+      elseif subcmd == "fail" then
+        engine:fail(id)
       end
     end
   end, {

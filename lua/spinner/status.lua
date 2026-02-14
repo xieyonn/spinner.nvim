@@ -5,6 +5,7 @@ local STATUS = {
   RUNNING = "running", -- started and spin.
   PAUSED = "paused", -- paused
   STOPPED = "stopped", -- stopped
+  FAILED = "failed", -- Failed state
 }
 
 return STATUS
