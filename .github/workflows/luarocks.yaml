@@ -1,5 +1,7 @@
 name: LuaRocks Release
 on:
+  release:
+    types: [published]
   push:
     tags: # Will upload to luarocks.org when a tag is pushed
       - "*"
