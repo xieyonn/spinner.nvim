@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0](https://github.com/xieyonn/spinner.nvim/compare/v1.1.0...v1.2.0) (2026-02-14)
+
+
+### Features
+
+* support install by rocks.nvim ([f0b593b](https://github.com/xieyonn/spinner.nvim/commit/f0b593b35149f5b0a25b4c4cd92543a433ddb8ef))
+
+
+### Bug Fixes
+
+* setup() placeholder and hl_group with table ([c612e4a](https://github.com/xieyonn/spinner.nvim/commit/c612e4ab6b23850f09e2aff49aa9e9aab55cec95))
+* setup() placeholder and hl_group with table ([#85](https://github.com/xieyonn/spinner.nvim/issues/85)) ([3ad4b99](https://github.com/xieyonn/spinner.nvim/commit/3ad4b999389b0aa56c39c24cac507d2b85238e4f))
+
 ## v1.1.0 - (2026-02-13)
 
 ### Highlights
