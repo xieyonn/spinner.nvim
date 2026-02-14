@@ -3,7 +3,8 @@
 Extensible spinner framework for Neovim plugins and UI.
 
 [![coverage](https://img.shields.io/codecov/c/github/xieyonn/spinner.nvim?branch=main&logo=codecov)](https://codecov.io/gh/xieyonn/spinner.nvim)
-[![release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/releases/latest)
+[![release](https://img.shields.io/github/v/release/xieyonn/spinner.nvim?logo=github&color=81a2be)](https://github.com/xieyonn/spinner.nvim/releases/latest)
+[![LuaRocks](https://img.shields.io/luarocks/v/xieyonn/spinner.nvim?logo=lua&color=81a2be)](https://luarocks.org/modules/xieyonn/spinner.nvim)
 [![Requires Neovim 0.11+](https://img.shields.io/badge/requires-nvim%200.11%2B-9cf?logo=neovim)](https://neovim.io/)
 [![license](https://img.shields.io/github/license/xieyonn/spinner.nvim)](https://github.com/xieyonn/spinner.nvim/blob/main/LICENSE)
 
