@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/xieyonn/spinner.nvim/compare/v1.3.0...v1.4.0) (2026-02-14)
+
+
+### Features
+
+* add api fail() extend hl_group and placeholder ([e65b1a3](https://github.com/xieyonn/spinner.nvim/commit/e65b1a37108e90b380defd9b7d2640086718fab5))
+
 ## [1.3.0](https://github.com/xieyonn/spinner.nvim/compare/v1.2.0...v1.3.0) (2026-02-14)
 
 
