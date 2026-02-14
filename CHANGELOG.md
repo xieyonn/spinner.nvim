@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/xieyonn/spinner.nvim/compare/v1.2.0...v1.3.0) (2026-02-14)
+
+
+### Features
+
+* ignore check CHANGELOG.md ([a653714](https://github.com/xieyonn/spinner.nvim/commit/a6537149a568750cb1e492a469ee4a87d6069a68))
+
+
+### Bug Fixes
+
+* on_update_ui pass hl_group field ([b5d577d](https://github.com/xieyonn/spinner.nvim/commit/b5d577df5745c0eab1bbf3db3492680653c1f634))
+
 ## [1.2.0](https://github.com/xieyonn/spinner.nvim/compare/v1.1.0...v1.2.0) (2026-02-14)
 
 
