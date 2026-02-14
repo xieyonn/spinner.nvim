@@ -76,7 +76,7 @@ function M.get_ui_updater(state)
         state.opts.on_update_ui({
           text = state:render(),
           status = state.status,
-          hl = state:get_hl_group(),
+          hl_group = state:get_hl_group(),
         })
       end
   end
