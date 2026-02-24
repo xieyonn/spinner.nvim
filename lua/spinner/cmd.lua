@@ -1,3 +1,5 @@
+local api = vim.api
+
 ---@class spinner.cmd
 local M = {}
 local utils = require("spinner.utils")
@@ -38,7 +40,7 @@ end
 
 ---@param engine spinner.Engine
 local function spinner_cmd(engine)
-  vim.api.nvim_create_user_command("Spinner", function(opts)
+  api.nvim_create_user_command("Spinner", function(opts)
     if vim.tbl_isempty(opts.fargs) then
       vim.notify(
         "[spinner.nvim]: Missing subcommand. Use one of: "

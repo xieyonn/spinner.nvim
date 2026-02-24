@@ -1,3 +1,5 @@
+local api = vim.api
+
 ---@param state spinner.State
 ---@return function
 return function(state)
@@ -6,7 +8,7 @@ return function(state)
     local hl = state:get_hl_group()
 
     if not hl then
-      vim.api.nvim_echo({ { text } }, false, {})
+      api.nvim_echo({ { text } }, false, {})
       return
     end
 
@@ -16,7 +18,7 @@ return function(state)
 
     if not (start_pos and end_pos and end_start and end_pos2) then
       -- No highlight markers found, display the whole text
-      vim.api.nvim_echo({ { text } }, false, {})
+      api.nvim_echo({ { text } }, false, {})
       return
     end
 
@@ -25,7 +27,7 @@ return function(state)
     local highlighted_text = text:sub(end_pos + 1, end_start - 1)
     local after_highlight = text:sub(end_pos2 + 1)
 
-    vim.api.nvim_echo(
+    api.nvim_echo(
       { { before_highlight }, { highlighted_text, hl }, { after_highlight } },
       false,
       {}

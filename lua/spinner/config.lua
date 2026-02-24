@@ -1,3 +1,5 @@
+local api = vim.api
+
 ---@class spinner.config
 local M = {}
 
@@ -194,9 +196,8 @@ function M.setup(opts)
   M.global = vim.tbl_extend("force", default_config, opts or {})
 
   -- Get NormalFloat attributes and only apply foreground color
-  local normal_float_hl =
-    vim.api.nvim_get_hl(0, { name = "Comment", link = false })
-  vim.api.nvim_set_hl(0, "Spinner", { fg = normal_float_hl.fg, default = true })
+  local normal_float_hl = api.nvim_get_hl(0, { name = "Comment", link = false })
+  api.nvim_set_hl(0, "Spinner", { fg = normal_float_hl.fg, default = true })
 end
 
 return M

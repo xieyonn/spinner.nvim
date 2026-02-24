@@ -1,3 +1,6 @@
+local api = vim.api
+local fn = vim.fn
+
 local STATUS = require("spinner.status")
 local utils = require("spinner.utils")
 
@@ -10,8 +13,8 @@ return function(state)
     local opts = state.opts
 
     local close = function()
-      if win and vim.api.nvim_win_is_valid(win) then
-        vim.api.nvim_win_close(win, true)
+      if win and api.nvim_win_is_valid(win) then
+        api.nvim_win_close(win, true)
         win, buf = nil, nil
       end
     end
@@ -32,14 +35,14 @@ return function(state)
       return
     end
 
-    if not (buf and vim.api.nvim_buf_is_valid(buf)) then
+    if not (buf and api.nvim_buf_is_valid(buf)) then
       buf = utils.create_scratch_buffer()
     end
-    local width = vim.fn.strdisplaywidth(text)
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, { text })
+    local width = fn.strdisplaywidth(text)
+    api.nvim_buf_set_lines(buf, 0, -1, false, { text })
 
-    if not (win and vim.api.nvim_win_is_valid(win)) then
-      win = vim.api.nvim_open_win(buf, false, {
+    if not (win and api.nvim_win_is_valid(win)) then
+      win = api.nvim_open_win(buf, false, {
         relative = "cursor",
         row = opts.row,
         col = opts.col,
@@ -54,17 +57,17 @@ return function(state)
 
       local hl = state:get_hl_group()
       if hl then
-        vim.api.nvim_set_option_value(
+        api.nvim_set_option_value(
           "winhighlight",
           "Normal:" .. hl,
           { win = win }
         )
       end
-      vim.api.nvim_set_option_value("winblend", opts.winblend, { win = win })
+      api.nvim_set_option_value("winblend", opts.winblend, { win = win })
       return
     end
 
-    vim.api.nvim_win_set_config(win, {
+    api.nvim_win_set_config(win, {
       relative = "cursor",
       row = opts.row,
       col = opts.col,

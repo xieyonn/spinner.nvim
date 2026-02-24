@@ -1,4 +1,5 @@
-local spinner_ns = vim.api.nvim_create_namespace("spinner.nvim")
+local api = vim.api
+local spinner_ns = api.nvim_create_namespace("spinner.nvim")
 
 ---@param state spinner.State
 ---@return function
@@ -18,7 +19,7 @@ return function(state)
       return
     end
 
-    if not vim.api.nvim_buf_is_valid(opts.bufnr) then
+    if not api.nvim_buf_is_valid(opts.bufnr) then
       stop()
       return
     end
@@ -28,7 +29,7 @@ return function(state)
     -- only delete extmark if text is empty, eg: we have a non-empty placeholder
     if "" == text then
       if extmark_id then
-        pcall(vim.api.nvim_buf_del_extmark, opts.bufnr, ns, extmark_id)
+        pcall(api.nvim_buf_del_extmark, opts.bufnr, ns, extmark_id)
         extmark_id = nil
       end
       return
@@ -48,7 +49,7 @@ return function(state)
       extmark_opts.id = extmark_id
 
       local success = pcall(
-        vim.api.nvim_buf_set_extmark,
+        api.nvim_buf_set_extmark,
         opts.bufnr,
         ns,
         opts.row,
@@ -65,7 +66,7 @@ return function(state)
 
     -- Create a new extmark
     local ok, id = pcall(
-      vim.api.nvim_buf_set_extmark,
+      api.nvim_buf_set_extmark,
       opts.bufnr,
       ns,
       opts.row,

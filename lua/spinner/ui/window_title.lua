@@ -1,3 +1,5 @@
+local api = vim.api
+
 local utils = require("spinner.utils")
 
 ---@param state spinner.State
@@ -10,13 +12,13 @@ return function(state, kind)
   end)
 
   return function()
-    if not (win and vim.api.nvim_win_is_valid(win)) then
+    if not (win and api.nvim_win_is_valid(win)) then
       -- prevent useless schedule
       require("spinner").stop(state.id, true)
       return
     end
 
-    local cfg = vim.api.nvim_win_get_config(win)
+    local cfg = api.nvim_win_get_config(win)
     if cfg.relative == "" then
       vim.notify_once(
         ("[spinner.nvim] can not display spinner in win: %d, this is no a float window"):format(
@@ -39,6 +41,6 @@ return function(state, kind)
       win_config.footer_pos = state.opts.pos or "center"
     end
 
-    vim.api.nvim_win_set_config(win, win_config)
+    api.nvim_win_set_config(win, win_config)
   end
 end
