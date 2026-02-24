@@ -99,33 +99,25 @@ describe("utils", function()
     end)
   end)
 
-  it("on_win_closed shoud call once then clear", function()
+  it("on_win_closed callback should return true", function()
     local win = 10
     local group = 1
     local autocmd_cb
-    local delete = spy.new(function() end)
 
-    stub(vim.api, "nvim_create_augroup").invokes(function(_, opts)
-      eq({ clear = true }, opts)
-      return group
-    end)
-    stub(vim.api, "nvim_create_autocmd").invokes(function(_, opts)
-      autocmd_cb = opts.callback
-    end)
-    stub(vim.api, "nvim_del_augroup_by_id").invokes(function(...)
-      delete(...)
-    end)
+    local augroup_stub = stub(vim.api, "nvim_create_augroup").returns(group)
+    local autocmd_stub = stub(vim.api, "nvim_create_autocmd").invokes(
+      function(_, opts)
+        autocmd_cb = opts.callback
+      end
+    )
 
     utils.on_win_closed(win, function() end)
 
-    -- not target window
-    autocmd_cb({ match = tostring(win + 1) })
-    assert.spy(delete).was.called(0)
+    local ret = autocmd_cb()
+    eq(true, ret)
 
-    -- target window
-    autocmd_cb({ match = tostring(win) })
-    assert.spy(delete).was.called(1)
-    assert.spy(delete).was.called_with(group)
+    augroup_stub:revert()
+    autocmd_stub:revert()
   end)
 
   it("should create_scratch_buffer() set correct field", function()

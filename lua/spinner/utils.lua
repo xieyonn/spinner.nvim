@@ -1,4 +1,5 @@
 local uv = vim.uv or vim.loop
+local api = vim.api
 
 ---@param quotestr string
 ---@param P fun(value: boolean|string|integer|function|table|vim.lpeg.Pattern): vim.lpeg.Pattern
@@ -13,7 +14,7 @@ end
 ---@class spinner.utils
 local M = {}
 
-M.AUGROUP = vim.api.nvim_create_augroup("spinner", { clear = true })
+M.AUGROUP = api.nvim_create_augroup("spinner", { clear = true })
 
 ---@return integer now
 function M.now_ms()
@@ -123,13 +124,13 @@ end
 ---Create a scratch buffer
 ---@return integer
 function M.create_scratch_buffer()
-  local buf = vim.api.nvim_create_buf(false, true)
+  local buf = api.nvim_create_buf(false, true)
 
-  vim.api.nvim_set_option_value("buftype", "nofile", { buf = buf })
-  vim.api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
-  vim.api.nvim_set_option_value("filetype", "spinner", { buf = buf })
-  vim.api.nvim_set_option_value("swapfile", false, { buf = buf })
-  vim.api.nvim_set_option_value("undofile", false, { buf = buf })
+  api.nvim_set_option_value("buftype", "nofile", { buf = buf })
+  api.nvim_set_option_value("bufhidden", "wipe", { buf = buf })
+  api.nvim_set_option_value("filetype", "spinner", { buf = buf })
+  api.nvim_set_option_value("swapfile", false, { buf = buf })
+  api.nvim_set_option_value("undofile", false, { buf = buf })
   return buf
 end
 
@@ -137,20 +138,13 @@ end
 ---@param win integer
 ---@param cb function
 function M.on_win_closed(win, cb)
-  local group = vim.api.nvim_create_augroup(
-    ("spinner-winid-%d"):format(win),
-    { clear = true }
-  )
-
-  vim.api.nvim_create_autocmd("WinClosed", {
-    group = group,
-    callback = function(args)
-      if tonumber(args.match) ~= win then
-        return
-      end
-
+  api.nvim_create_autocmd("WinClosed", {
+    pattern = tostring(win),
+    once = true,
+    group = api.nvim_create_augroup(("spinner-winid-%d"):format(win), {}),
+    callback = function()
       cb(win)
-      vim.api.nvim_del_augroup_by_id(group)
+      return true
     end,
   })
 end
