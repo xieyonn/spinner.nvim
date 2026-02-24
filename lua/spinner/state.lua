@@ -45,6 +45,7 @@
 -- - force stop ignores active count and immediately stops
 
 local config = require("spinner.config")
+local fn = vim.fn
 local event = require("spinner.event")
 local pattern_map = require("spinner.pattern")
 local set = require("spinner.set")
@@ -372,7 +373,7 @@ local function merge_opts(opts)
   elseif placeholder == true then
     -- use a empty string with same length of frames as placeholder
     local first_frame = opts.pattern.frames and opts.pattern.frames[1] or ""
-    opts.placeholder = (" "):rep(vim.fn.strdisplaywidth(first_frame))
+    opts.placeholder = (" "):rep(fn.strdisplaywidth(first_frame))
   end
 
   opts.ttl_ms = vim.F.if_nil(opts.ttl_ms, config.global.ttl_ms)

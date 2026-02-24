@@ -1,3 +1,5 @@
+local api = vim.api
+
 local pattern_map = require("spinner.pattern")
 local utils = require("spinner.utils")
 
@@ -25,7 +27,7 @@ function M.open()
   local height = math.floor(vim.o.lines * 0.6)
   local row = math.floor((vim.o.lines - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)
-  local win = vim.api.nvim_open_win(bufnr, true, {
+  local win = api.nvim_open_win(bufnr, true, {
     relative = "editor",
     row = row,
     col = col,
@@ -58,7 +60,7 @@ function M.open()
     i = i + 1
   end
 
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+  api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
 
   for pattern in vim.spairs(pattern_map) do
     require("spinner").start(pattern)
@@ -66,8 +68,8 @@ function M.open()
 
   for _, key in ipairs({ "q", "<Esc>" }) do
     vim.keymap.set("n", key, function()
-      if vim.api.nvim_win_is_valid(win) then
-        vim.api.nvim_win_close(win, true)
+      if api.nvim_win_is_valid(win) then
+        api.nvim_win_close(win, true)
       end
     end, {
       buffer = bufnr,
@@ -76,7 +78,7 @@ function M.open()
     })
   end
 
-  vim.api.nvim_create_autocmd("BufWipeout", {
+  api.nvim_create_autocmd("BufWipeout", {
     buffer = bufnr,
     callback = function()
       for _, pattern in ipairs(patterns) do

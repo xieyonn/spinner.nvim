@@ -1,4 +1,5 @@
 local has_lualine, lualine = pcall(require, "lualine")
+local api = vim.api
 
 if has_lualine and lualine then
   return function()
@@ -8,9 +9,9 @@ if has_lualine and lualine then
   end
 end
 
-if vim.api.nvim__redraw then
+if api.nvim__redraw then
   return function()
-    vim.api.nvim__redraw({ winbar = true })
+    api.nvim__redraw({ winbar = true })
   end
 end
 
