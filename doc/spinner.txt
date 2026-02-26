@@ -891,7 +891,7 @@ eg: show a gree ✔ to indicate lsp is ready.
 
 
 
-  statusline / tabline / winbar will wrap text in format `%#HL_GROUP#...%*` and
+  statusline / tabline / winbar will wrap text in format `%#HL_GROUP#content` and
   requires explicit setting in `config()` rather then `setup()` for backward
   compatibility
 
