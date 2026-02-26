@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.0](https://github.com/xieyonn/spinner.nvim/compare/v1.3.0...v1.4.0) (2026-02-26)
+
+
+### Features
+
+* add api fail() extend hl_group and placeholder ([e65b1a3](https://github.com/xieyonn/spinner.nvim/commit/e65b1a37108e90b380defd9b7d2640086718fab5))
+* add local cache var for vim.api and vim.fn ([cd8041f](https://github.com/xieyonn/spinner.nvim/commit/cd8041ff486230cea2599447e0d69fc5e6d12e4f))
+* remove %* in hl_group format in statusline/tabline/winbar ([68a4b3b](https://github.com/xieyonn/spinner.nvim/commit/68a4b3b4e54e9641f0361f8f90d652eeb63be492))
+* remove %* in hl_group format in statusline/tabline/winbar ([#97](https://github.com/xieyonn/spinner.nvim/issues/97)) ([ee6726f](https://github.com/xieyonn/spinner.nvim/commit/ee6726f2abc1f4e42a7b6067e9a5f4326f4e1287))
+* simpler on_win_closed ([7a199ec](https://github.com/xieyonn/spinner.nvim/commit/7a199ec5e08e167de0b7bbaecf960739c0a1a7df))
+
 ## [1.3.0](https://github.com/xieyonn/spinner.nvim/compare/v1.2.0...v1.3.0) (2026-02-14)
 
 
