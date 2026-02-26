@@ -1166,7 +1166,7 @@ describe("state", function()
         hl_group = "abc",
         placeholder = "123",
       })
-      eq("%#abc#123%*", state:render())
+      eq("%#abc#123", state:render())
     end
   end)
 

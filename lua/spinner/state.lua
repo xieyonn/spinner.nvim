@@ -496,9 +496,9 @@ function M:render()
       text = ("{{SPINNER_HIGHLIGHT}}%s{{END_HIGHLIGHT}}"):format(text)
     end
 
-    -- apply hl_group format for lines: %#hl_group# text %*
+    -- apply hl_group format for lines: %#hl_group#text
     if hl_group_line:has(self.opts.kind) then
-      text = string.format("%%#%s#%s%%*", hl, text)
+      text = string.format("%%#%s#%s", hl, text)
     end
   end
 
