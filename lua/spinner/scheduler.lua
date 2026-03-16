@@ -6,7 +6,7 @@ local SCHEDULE_WINDOW_MS = 10
 local IDLE_RELEASE_MS = 10000
 
 ---@class spinner.SchedulerTask
----@field at number
+---@field at integer
 ---@field job spinner.SchedulerJob
 
 ---@alias spinner.SchedulerJob fun(): nil|integer
