@@ -8,7 +8,7 @@ local lsp = require("spinner.event.lsp")
 ---@field progress? boolean
 ---@field request? spinner.LspRequest[]
 
----@alias spinner.LspRequest vim.lsp.protocol.Method
+---@alias spinner.LspRequest vim.lsp.protocol.Method.ClientToServer
 
 ---@class spinner.event
 local M = {}
