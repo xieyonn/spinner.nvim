@@ -8,11 +8,7 @@ require("spinner.config").setup()
 ---@class spinner
 local M = {}
 
----Setup config.
----@param opts? spinner.Config
-function M.setup(opts)
-  require("spinner.config").setup(opts)
-end
+M.setup = require("spinner.config").setup
 
 ---Start spinner.
 ---@param id string spinner id.
