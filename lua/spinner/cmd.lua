@@ -39,18 +39,29 @@ local function spinner_completion(engine)
 end
 
 ---@param engine spinner.Engine
-local function spinner_cmd(engine)
+function M.setup(engine)
   api.nvim_create_user_command("Spinner", function(opts)
     if vim.tbl_isempty(opts.fargs) then
       vim.notify(
-        "[spinner.nvim]: Missing subcommand. Use one of: "
-          .. table.concat(subcmds, ", "),
+        ("[spinner.nvim]: Missing subcommand. Use one of: %s"):format(
+          table.concat(subcmds, ", ")
+        ),
         vim.log.levels.WARN
       )
       return
     end
 
     local subcmd = opts.fargs[1]
+    if not vim.list_contains(subcmds, subcmd) then
+      vim.notify(
+        ("[spinner.nvim]: Invalid subcommand. Use one of: %s"):format(
+          table.concat(subcmds, ", ")
+        ),
+        vim.log.levels.WARN
+      )
+      return
+    end
+
     local spinner_ids = { unpack(opts.fargs, 2) } -- All remaining arguments are spinner IDs
 
     -- Deduplicate spinner IDs while preserving order
@@ -65,10 +76,10 @@ local function spinner_cmd(engine)
         -- Continue to next spinner instead of returning
       elseif not vim.list_contains(subcmds, subcmd) then
         vim.notify(
-          "[spinner.nvim]: Unknown subcommand '"
-            .. subcmd
-            .. "'. Use one of: "
-            .. table.concat(subcmds, ", "),
+          ("[spinner.nvim]: Unknown subcommand '%s'. Use one of: %s"):format(
+            subcmd,
+            table.concat(subcmds, ", ")
+          ),
           vim.log.levels.WARN
         )
         return
@@ -92,11 +103,6 @@ local function spinner_cmd(engine)
     complete = spinner_completion(engine),
     force = true,
   })
-end
-
----@param engine spinner.Engine
-function M.setup(engine)
-  spinner_cmd(engine)
 end
 
 return M
