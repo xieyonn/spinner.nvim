@@ -54,6 +54,9 @@ local utils = require("spinner.utils")
 
 local STATUS = require("spinner.status")
 
+---@diagnostic disable-next-line:deprecated
+local if_nil = vim.fn.has("nvim-0.13") == 1 and vim.nonnil or vim.F.if_nil
+
 ---@alias spinner.UIScope
 ---| "statusline" -- Status line UI scope
 ---| "tabline" -- Tab line UI scope
@@ -360,7 +363,7 @@ local function merge_opts(opts)
   opts = opts or {}
 
   opts.kind = opts.kind or "custom"
-  opts.pattern = vim.F.if_nil(opts.pattern, config.global.pattern)
+  opts.pattern = if_nil(opts.pattern, config.global.pattern)
 
   if type(opts.pattern) == "string" then
     opts.pattern = pattern_map[opts.pattern]
@@ -376,16 +379,15 @@ local function merge_opts(opts)
     opts.placeholder = (" "):rep(fn.strdisplaywidth(first_frame))
   end
 
-  opts.ttl_ms = vim.F.if_nil(opts.ttl_ms, config.global.ttl_ms)
+  opts.ttl_ms = if_nil(opts.ttl_ms, config.global.ttl_ms)
   opts.initial_delay_ms =
-    vim.F.if_nil(opts.initial_delay_ms, config.global.initial_delay_ms)
+    if_nil(opts.initial_delay_ms, config.global.initial_delay_ms)
 
   if opts.kind == "cursor" then
-    opts.winblend =
-      vim.F.if_nil(opts.winblend, config.global.cursor_spinner.winblend)
-    opts.zindex = vim.F.if_nil(opts.zindex, config.global.cursor_spinner.zindex)
-    opts.row = vim.F.if_nil(opts.row, config.global.cursor_spinner.row)
-    opts.col = vim.F.if_nil(opts.col, config.global.cursor_spinner.col)
+    opts.winblend = if_nil(opts.winblend, config.global.cursor_spinner.winblend)
+    opts.zindex = if_nil(opts.zindex, config.global.cursor_spinner.zindex)
+    opts.row = if_nil(opts.row, config.global.cursor_spinner.row)
+    opts.col = if_nil(opts.col, config.global.cursor_spinner.col)
   end
 
   if opts.kind == "window-title" or opts.kind == "window-footer" then
@@ -397,7 +399,7 @@ local function merge_opts(opts)
   if
     not vim.list_contains({ "statusline", "tabline", "winbar" }, opts.kind)
   then
-    opts.hl_group = vim.F.if_nil(opts.hl_group, config.global.hl_group)
+    opts.hl_group = if_nil(opts.hl_group, config.global.hl_group)
   end
 
   return opts
