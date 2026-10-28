@@ -73,15 +73,6 @@ function M.setup(engine)
           ("[spinner.nvim]: spinner %s not setup yet"):format(id),
           vim.log.levels.WARN
         )
-        -- Continue to next spinner instead of returning
-      elseif not vim.list_contains(subcmds, subcmd) then
-        vim.notify(
-          ("[spinner.nvim]: Unknown subcommand '%s'. Use one of: %s"):format(
-            subcmd,
-            table.concat(subcmds, ", ")
-          ),
-          vim.log.levels.WARN
-        )
         return
       end
 
