@@ -54,8 +54,7 @@ local utils = require("spinner.utils")
 
 local STATUS = require("spinner.status")
 
----@diagnostic disable-next-line:deprecated
-local if_nil = vim.fn.has("nvim-0.13") == 1 and vim.nonnil or vim.F.if_nil
+local if_nil = vim.nonnil or vim.F.if_nil
 
 ---@alias spinner.UIScope
 ---| "statusline" -- Status line UI scope
